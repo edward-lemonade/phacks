@@ -1,0 +1,346 @@
+{
+  "nodes": [
+    {
+      "id": "n1",
+      "type": "thesis",
+      "label": "CI is a poor guide to moral duties",
+      "detail": "The categorical imperative reveals itself to be a poor guide to understanding our moral duties, due to its requirement for universality, no constraints on maxim specificity, and conflicting results.",
+      "strength": "strong",
+      "counterarguments": [
+        "Other formulations of the CI might address these issues",
+        "Kant's intent for CI application is misunderstood"
+      ],
+      "further_supports": [
+        "Analyze historical impact of CI's application",
+        "Compare CI's efficacy with other ethical frameworks"
+      ],
+      "strength_reasoning": "The thesis is well-supported by three distinct lines of argumentation, each providing examples and addressing potential counterpoints."
+    },
+    {
+      "id": "n2",
+      "type": "subclaim",
+      "label": "Universality rules out intuitively moral actions",
+      "detail": "The categorical imperative faces the problem that it tends to rule out maxims that are intuitively not immoral and assumes all humans are equal.",
+      "strength": "strong",
+      "counterarguments": [
+        "Intuition is not a reliable guide for morality"
+      ],
+      "further_supports": [
+        "Provide more examples of intuitively moral actions ruled out by CI"
+      ],
+      "strength_reasoning": "This subclaim is strongly supported by two distinct arguments with illustrative examples in the text."
+    },
+    {
+      "id": "n3",
+      "type": "subclaim",
+      "label": "No constraint on maxim specificity leads to abuses",
+      "detail": "The categorical imperative does not limit how specific a maxim can be, allowing exploitation to justify highly specific evils.",
+      "strength": "strong",
+      "counterarguments": [
+        "Kant implicitly intended maxims to be general"
+      ],
+      "further_supports": [
+        "Cite Kantian scholars on maxim formulation"
+      ],
+      "strength_reasoning": "This subclaim is strongly supported by a clear example demonstrating how a lack of specificity limits can be exploited."
+    },
+    {
+      "id": "n4",
+      "type": "subclaim",
+      "label": "CI provides conflicting results, no moral guidance",
+      "detail": "The categorical imperative can validate two maxims that directly oppose each other, leaving us stranded in moral dilemmas.",
+      "strength": "strong",
+      "counterarguments": [
+        "A deeper analysis of the CI resolves apparent conflicts"
+      ],
+      "further_supports": [
+        "Explore additional examples of conflicting universalizable maxims"
+      ],
+      "strength_reasoning": "This subclaim is strongly supported by examples of directly opposing maxims that both pass the universality test, and it rebuts a common objection."
+    },
+    {
+      "id": "n5",
+      "type": "subclaim",
+      "label": "CI rules out actions moral in low amounts",
+      "detail": "The categorical imperative fails to account for the fact that certain actions are moral because they are done in low amounts, ruling them out due to universality.",
+      "strength": "strong",
+      "counterarguments": [
+        "CI is not intended for trivial, non-moral actions"
+      ],
+      "further_supports": [
+        "Provide psychological research on human intuition of 'low amount' morality"
+      ],
+      "strength_reasoning": "This subclaim is strongly supported by the 'buying bread' example, which highlights the flaw in CI's universalization for common actions."
+    },
+    {
+      "id": "n6",
+      "type": "evidence",
+      "label": "Universal bread buying causes shortage",
+      "detail": "The maxim 'One shall purchase a lot of bread on Sundays' is only moral if everyone abided by it universally, which would cause a severe bread shortage and make it impossible to follow.",
+      "strength": "strong",
+      "counterarguments": [
+        "The example is a 'straw man' as CI applies to moral duties, not consumer habits"
+      ],
+      "further_supports": [
+        "Provide other examples of resource-dependent actions"
+      ],
+      "strength_reasoning": "The example logically demonstrates how universalizing a seemingly innocuous action leads to a contradiction, supporting the claim about CI's universality problem."
+    },
+    {
+      "id": "n7",
+      "type": "subclaim",
+      "label": "CI's universality assumes homogeneous humans",
+      "detail": "The universality aspect of the categorical imperative attempts to establish values of fairness and impartiality by wrongfully assuming all humans to be equal and homogenous.",
+      "strength": "strong",
+      "counterarguments": [
+        "Kant explicitly addresses roles and duties in society"
+      ],
+      "further_supports": [
+        "Cite philosophical arguments on societal roles and equality"
+      ],
+      "strength_reasoning": "This subclaim is strongly supported by the police officer example, which demonstrates how uniform authority leads to societal breakdown."
+    },
+    {
+      "id": "n8",
+      "type": "evidence",
+      "label": "Universal police authority leads to abuses",
+      "detail": "If everyone exercised the same authority as police officers, it would quickly result in abuses of such power and violent altercations.",
+      "strength": "strong",
+      "counterarguments": [
+        "This scenario misinterprets the nature of public service authority"
+      ],
+      "further_supports": [
+        "Provide sociological studies on power distribution"
+      ],
+      "strength_reasoning": "The hypothetical scenario logically illustrates the societal problems that arise from universalizing a specific authority, supporting the critique of CI's assumption of homogeneity."
+    },
+    {
+      "id": "n9",
+      "type": "axiom",
+      "label": "Society relies on flexible division of labor",
+      "detail": "A safe, robust society relies on a flexible pool of citizens, but the categorical imperative severely limits us from granting privileges and power to some people over others.",
+      "strength": "true",
+      "counterarguments": [
+        "Strict adherence to universal laws prevents systemic oppression"
+      ],
+      "further_supports": [
+        "Reference political philosophy on state function"
+      ],
+      "strength_reasoning": "This statement is presented as a fundamental truth about societal function, serving as an underlying premise for the critique of CI's universality."
+    },
+    {
+      "id": "n10",
+      "type": "evidence",
+      "label": "Reformed police maxim passes universality",
+      "detail": "The maxim 'Only certified police officers have the authority to capture and detain those who act disobedient with the law' passes the universality test as conditions apply only to a specific selection of people.",
+      "strength": "strong",
+      "counterarguments": [
+        "This is a properly formulated maxim, not an exploitation of a flaw"
+      ],
+      "further_supports": [
+        "Show how similar maxims are used in other ethical systems"
+      ],
+      "strength_reasoning": "The example demonstrates how adding specificity can make a maxim pass the CI test, directly supporting the claim that CI lacks limits on specificity."
+    },
+    {
+      "id": "n11",
+      "type": "subclaim",
+      "label": "Exploiting specificity justifies specific evils",
+      "detail": "One can add an arbitrary amount of conditional statements to a maxim, torturing it to work and justify highly specific evils that result in no impossibility or contradiction.",
+      "strength": "strong",
+      "counterarguments": [
+        "Such 'tortured' maxims violate the spirit of the CI"
+      ],
+      "further_supports": [
+        "Examine historical instances of legal loopholes used to justify injustice"
+      ],
+      "strength_reasoning": "This subclaim logically follows from the previous example and is further reinforced by the Lebron James example."
+    },
+    {
+      "id": "n12",
+      "type": "evidence",
+      "label": "Lebron James maxim justifies arbitrary detention",
+      "detail": "The maxim 'Only certified police officers have the authority... or innocent people named Lebron James' generates no issues once universalized, meaning it is moral for people named Lebron James to be detained unlawfully.",
+      "strength": "strong",
+      "counterarguments": [
+        "The example is far-fetched and not a serious application of CI"
+      ],
+      "further_supports": [
+        "Present more plausible, specific unjust maxims that pass the CI"
+      ],
+      "strength_reasoning": "This extreme example effectively highlights how a lack of specificity limits in CI can lead to counterintuitive and immoral justifications."
+    },
+    {
+      "id": "n13",
+      "type": "evidence",
+      "label": "Conflicting Lebron James maxims A and B",
+      "detail": "Maxim A: 'Police officers can unlawfully detain people named Lebron James for no reason', and Maxim B: 'Police officers cannot unlawfully detain people named Lebron James for no reason'. Both can be universalized without issues, but directly oppose each other.",
+      "strength": "strong",
+      "counterarguments": [
+        "Maxims must be logically consistent for a moral system"
+      ],
+      "further_supports": [
+        "Cite logical paradoxes in other philosophical systems"
+      ],
+      "strength_reasoning": "The direct opposition of two universalizable maxims clearly demonstrates a failure of CI to provide decisive moral guidance."
+    },
+    {
+      "id": "n14",
+      "type": "counterclaim",
+      "label": "Conflict problem due to overly specific maxims",
+      "detail": "The issue did not arise simply because I was being overly specific with my maxim.",
+      "strength": "weak",
+      "counterarguments": [],
+      "further_supports": [
+        "Examine the 'spirit' of Kantian maxim formulation"
+      ],
+      "strength_reasoning": "This is a potential objection to the previous example's relevance, which the author immediately addresses and rebuts."
+    },
+    {
+      "id": "n15",
+      "type": "subclaim",
+      "label": "Even general maxims result in conflicts",
+      "detail": "Even when our maxims are quite general, we still come across conflicting results, such as 'One may eat dogs' and 'One shall not eat dogs'.",
+      "strength": "strong",
+      "counterarguments": [
+        "Cultural context determines such moral issues, not CI alone"
+      ],
+      "further_supports": [
+        "Explore other general maxims with conflicting universalizations"
+      ],
+      "strength_reasoning": "This subclaim directly rebuts the idea that the conflict problem only applies to overly specific maxims, strengthening the overall critique of CI."
+    },
+    {
+      "id": "n16",
+      "type": "evidence",
+      "label": "Opposing maxims about eating dogs",
+      "detail": "Maxims 'One may eat dogs' and 'One shall not eat dogs' can both be universalized directly without experiencing contradiction or impossibility in each independent case.",
+      "strength": "strong",
+      "counterarguments": [
+        "The morality of eating dogs involves more than just universalization"
+      ],
+      "further_supports": [
+        "Provide ethical frameworks that resolve this dilemma"
+      ],
+      "strength_reasoning": "This example effectively illustrates how CI fails to provide guidance on general moral issues, reinforcing the claim about conflicting results."
+    },
+    {
+      "id": "n17",
+      "type": "subclaim",
+      "label": "CI provides no guidance in moral dilemmas",
+      "detail": "The categorical imperative does not at all guide us in determining which moral code we are supposed to abide by.",
+      "strength": "strong",
+      "counterarguments": [
+        "CI provides a framework, not specific answers for every dilemma"
+      ],
+      "further_supports": [
+        "Compare CI's guidance with other ethical frameworks in dilemmas"
+      ],
+      "strength_reasoning": "This subclaim is a logical conclusion derived from the conflict problem, directly stating the practical failing of CI."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "source": "n2",
+      "target": "n1",
+      "relation": "supports"
+    },
+    {
+      "id": "e2",
+      "source": "n3",
+      "target": "n1",
+      "relation": "supports"
+    },
+    {
+      "id": "e3",
+      "source": "n4",
+      "target": "n1",
+      "relation": "supports"
+    },
+    {
+      "id": "e4",
+      "source": "n5",
+      "target": "n2",
+      "relation": "supports"
+    },
+    {
+      "id": "e5",
+      "source": "n6",
+      "target": "n5",
+      "relation": "supports"
+    },
+    {
+      "id": "e6",
+      "source": "n7",
+      "target": "n2",
+      "relation": "supports"
+    },
+    {
+      "id": "e7",
+      "source": "n8",
+      "target": "n7",
+      "relation": "supports"
+    },
+    {
+      "id": "e8",
+      "source": "n9",
+      "target": "n7",
+      "relation": "supports"
+    },
+    {
+      "id": "e9",
+      "source": "n10",
+      "target": "n3",
+      "relation": "supports"
+    },
+    {
+      "id": "e10",
+      "source": "n11",
+      "target": "n10",
+      "relation": "supports"
+    },
+    {
+      "id": "e11",
+      "source": "n12",
+      "target": "n11",
+      "relation": "supports"
+    },
+    {
+      "id": "e12",
+      "source": "n13",
+      "target": "n4",
+      "relation": "supports"
+    },
+    {
+      "id": "e13",
+      "source": "n14",
+      "target": "n13",
+      "relation": "contradicts"
+    },
+    {
+      "id": "e14",
+      "source": "n15",
+      "target": "n14",
+      "relation": "contradicts"
+    },
+    {
+      "id": "e15",
+      "source": "n15",
+      "target": "n4",
+      "relation": "supports"
+    },
+    {
+      "id": "e16",
+      "source": "n16",
+      "target": "n15",
+      "relation": "supports"
+    },
+    {
+      "id": "e17",
+      "source": "n17",
+      "target": "n4",
+      "relation": "supports"
+    }
+  ]
+}

@@ -8,12 +8,7 @@ export type NodeType =
 	| "axiom"
 	| "counterclaim";
 
-export type EdgeRelation =
-	| "supports"
-	| "contradicts"
-	| "qualifies"
-	| "assumes"
-	| "contains_fallacy";
+export type EdgeRelation = "supports" | "contradicts";
 
 /** API graph node — includes embedded analysis (not separate canvas nodes) */
 export interface GraphNode {
@@ -23,7 +18,7 @@ export interface GraphNode {
 	detail: string;
 	strength: StrengthLabel | string;
 	counterarguments?: string[];
-	unacknowledged_strengths?: string[];
+	further_supports?: string[];
 	strength_reasoning?: string;
 }
 
@@ -46,7 +41,7 @@ export interface ArgumentNodeData extends Record<string, unknown> {
 	detail: string;
 	strength: StrengthLabel;
 	counterarguments: string[];
-	unacknowledged_strengths: string[];
+	further_supports: string[];
 	strength_reasoning: string;
 	onNodeClick: (data: ArgumentNodeData) => void;
 }

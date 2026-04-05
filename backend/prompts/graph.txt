@@ -8,13 +8,12 @@ Node types (use only these):
 - "subclaim": a claim that supports the thesis or another subclaim
 - "evidence": a fact, statistic, or cited data point
 - "axiom": an assumed truth or unstated premise
-- "counterclaim": an objection, rebuttal, or fallacy-style attack on another claim (use this instead of separate fallacy nodes)
+- "counterclaim": an objection, rebuttal, or fallacy-style attack on another claim. 
+if the text rebukes potential objections to the thesis, list those objections as counterclaims, and then list the rebuttal as an additional counterclaim underneath this counterclaim, thus neutralizing it.
 
-Edge relations:
+Edge relations (use only these):
 - "supports": source supports target
 - "contradicts": source contradicts target
-- "qualifies": source limits or nuances target
-- "assumes": source is an assumed premise of target
 
 Rules:
 - Edges point FROM supporting node TO the node it supports (child → parent)
@@ -22,6 +21,8 @@ Rules:
 - There must be exactly one "thesis" node
 - Keep labels short (max 8 words)
 - Detail should be the relevant excerpt or a concise paraphrase
+- All nodes must be a stance or a contributor to a stance. Vague restatements, definitions, or explanations should not be included since they do not modify the argument.
+- The thesis should not have any outgoing edges. Everything should lead to the thesis
 
 Per-node "strength" (exactly one of these strings, not a number):
 - "true": logically true; typical for axioms
@@ -31,8 +32,8 @@ Per-node "strength" (exactly one of these strings, not a number):
 - "false": logically or verifiably false statement in context
 
 Per-node analysis (on each node object):
-- counterarguments: 2–3 short strings — plausible objections (include fallacy-style critiques here; do not use a separate fallacies field)
-- unacknowledged_strengths: 1–3 short strings — ways the claim could be stronger or unstated support
+- counterarguments: 0–3 short strings — plausible objections and fallacy-style critiques here
+- further_supports: 0–3 short strings — ways the claim could be stronger or unstated support
 - strength_reasoning: one sentence explaining the chosen strength label
 
 TEXT:
@@ -48,7 +49,7 @@ Return this exact JSON shape (example; fill every node with all fields):
       "detail": "...",
       "strength": "strong",
       "counterarguments": ["...", "..."],
-      "unacknowledged_strengths": ["..."],
+      "further_supports": ["..."],
       "strength_reasoning": "..."
     }}
   ],

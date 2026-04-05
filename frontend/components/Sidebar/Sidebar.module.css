@@ -6,7 +6,7 @@
 	flex-shrink: 0;
 	width: var(--sidebar-expanded-w);
 	border-right: 1px solid var(--border);
-	background: linear-gradient(165deg, #12121a 0%, var(--surface) 45%, #0a0a0c 100%);
+	background: linear-gradient(165deg, #12121a 0%, var(--surface) 45%, #24211c 100%);
 	transition: width 0.42s cubic-bezier(0.4, 0, 0.2, 1);
 	/* Allow the toggle to sit past the edge; clip only inside .inner */
 	overflow: visible;
@@ -79,6 +79,8 @@
 }
 
 .expandedBlock {
+	flex: 1;
+	min-height: 0;
 	overflow: hidden;
 	min-width: var(--sidebar-expanded-inner-min);
 	box-sizing: border-box;

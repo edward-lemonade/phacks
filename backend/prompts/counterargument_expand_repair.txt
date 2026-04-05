@@ -1,0 +1,17 @@
+The previous model output for a counterargument expansion did not match the required graph shape.
+
+Validation error: {validation_error}
+
+Rules to satisfy:
+- Exactly one node with type "counterclaim".
+- At least one other node with type only "evidence", "subclaim", or "axiom".
+- Exactly one edge from the counterclaim to parent "{parent_node_id}" with relation "contradicts".
+- Each evidence/subclaim/axiom node must have an edge to the counterclaim id (source = that node, target = counterclaim), relation "supports".
+- No edge from evidence/subclaim/axiom directly to the parent; only the counterclaim links to the parent.
+
+Fact text: {fact_text}
+
+Original passage:
+{original_text}
+
+Broken JSON to fix — return corrected full JSON only (nodes + edges). The invalid output is appended below this line as plain text.

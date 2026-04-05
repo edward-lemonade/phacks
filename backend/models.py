@@ -46,7 +46,7 @@ class Node(BaseModel):
     detail: str
     strength: str = "weak"
     counterarguments: List[str] = Field(default_factory=list)
-    unacknowledged_strengths: List[str] = Field(default_factory=list)
+    further_supports: List[str] = Field(default_factory=list)
     strength_reasoning: str = ""
 
     @field_validator("strength", mode="before")
@@ -59,7 +59,7 @@ class Edge(BaseModel):
     id: str
     source: str
     target: str
-    relation: str  # supports | contradicts | qualifies | assumes
+    relation: str  # supports | contradicts
 
 
 class GraphResponse(BaseModel):
@@ -104,7 +104,7 @@ class NodeAnalysisResponse(BaseModel):
 
 class ExpandFactRequest(BaseModel):
     parent_node_id: str
-    fact_kind: str  # counterargument | unacknowledged_strength
+    fact_kind: str  # counterargument | further_support
     fact_text: str
     original_text: str
     parent_label: str

@@ -1,6 +1,7 @@
 import json
 import os
 import re
+from typing import Optional
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -15,6 +16,7 @@ from models import (
     NodeAnalysisResponse,
 )
 from prompts import (
+    COUNTERARGUMENT_EXPAND_REPAIR_PROMPT,
     ENRICH_EXPAND_NODES_PROMPT,
     EXPAND_FACT_PROMPT,
     GRAPH_PROMPT,
@@ -94,7 +96,7 @@ def _enrich_expand_nodes_if_needed(data: dict, req: ExpandFactRequest) -> None:
         ca = n.get("counterarguments")
         if not isinstance(ca, list):
             ca = []
-        us = n.get("unacknowledged_strengths")
+        us = n.get("further_supports")
         if not isinstance(us, list):
             us = []
         sr = str(n.get("strength_reasoning") or "").strip()
@@ -142,14 +144,84 @@ def _enrich_expand_nodes_if_needed(data: dict, req: ExpandFactRequest) -> None:
             cleaned = [str(x).strip() for x in ca if str(x).strip()]
             if len(cleaned) >= 2:
                 target["counterarguments"] = cleaned[:3]
-        us = fields.get("unacknowledged_strengths")
+        us = fields.get("further_supports")
         if isinstance(us, list):
             cleaned = [str(x).strip() for x in us if str(x).strip()]
             if len(cleaned) >= 1:
-                target["unacknowledged_strengths"] = cleaned[:3]
+                target["further_supports"] = cleaned[:3]
         sr = fields.get("strength_reasoning")
         if isinstance(sr, str) and sr.strip():
             target["strength_reasoning"] = sr.strip()
+
+
+COUNTERARGUMENT_CHILD_TYPES = frozenset({"evidence", "subclaim", "axiom"})
+
+
+def _validate_counterargument_expand(data: dict, parent_id: str) -> Optional[str]:
+    """Return an error message if counterargument expansion does not match required topology."""
+    nodes = data.get("nodes")
+    edges = data.get("edges")
+    if not isinstance(nodes, list) or not nodes:
+        return "response must include a non-empty nodes array"
+    if not isinstance(edges, list):
+        return "response must include an edges array"
+
+    cc_ids = [
+        n["id"]
+        for n in nodes
+        if isinstance(n, dict) and n.get("type") == "counterclaim"
+    ]
+    if len(cc_ids) != 1:
+        return "must include exactly one counterclaim node"
+    cc_id = cc_ids[0]
+
+    cc_to_parent = [
+        e
+        for e in edges
+        if isinstance(e, dict)
+        and e.get("source") == cc_id
+        and e.get("target") == parent_id
+        and e.get("relation") == "contradicts"
+    ]
+    if len(cc_to_parent) != 1:
+        return "counterclaim must have exactly one edge to the parent with relation contradicts"
+
+    for e in edges:
+        if not isinstance(e, dict):
+            continue
+        if e.get("target") == parent_id and e.get("source") != cc_id:
+            return "only the counterclaim may link to the parent node"
+
+    children = [n for n in nodes if isinstance(n, dict) and n.get("id") != cc_id]
+    if len(children) < 1:
+        return "must include at least one evidence, subclaim, or axiom node linked to the counterclaim"
+
+    for n in children:
+        nid = n.get("id")
+        t = (n.get("type") or "").lower()
+        if t not in COUNTERARGUMENT_CHILD_TYPES:
+            return f"node {nid!r} must be type evidence, subclaim, or axiom (got {t!r})"
+        linked = False
+        for e in edges:
+            if not isinstance(e, dict):
+                continue
+            if (
+                e.get("source") == nid
+                and e.get("target") == cc_id
+                and e.get("relation") == "supports"
+            ):
+                linked = True
+                break
+        if not linked:
+            return f"node {nid!r} must link to the counterclaim with supports"
+
+    for e in edges:
+        if not isinstance(e, dict):
+            continue
+        if e.get("source") == cc_id and e.get("target") != parent_id:
+            return "counterclaim must only link to the parent in this fragment"
+
+    return None
 
 
 def _ensure_expand_node_analysis(nodes: list) -> None:
@@ -170,7 +242,7 @@ def _ensure_expand_node_analysis(nodes: list) -> None:
             ca.append("Could a reader reasonably reject this claim on other grounds?")
         n["counterarguments"] = ca[:3]
 
-        us = n.get("unacknowledged_strengths")
+        us = n.get("further_supports")
         if not isinstance(us, list):
             us = []
         us = [str(x).strip() for x in us if str(x).strip()]
@@ -178,7 +250,7 @@ def _ensure_expand_node_analysis(nodes: list) -> None:
             us.append(
                 f"What support, data, or clarification would make “{short}” more compelling?"
             )
-        n["unacknowledged_strengths"] = us[:3]
+        n["further_supports"] = us[:3]
 
         if not str(n.get("strength_reasoning") or "").strip():
             n["strength_reasoning"] = (
@@ -211,8 +283,8 @@ async def analyze(req: AnalyzeRequest):
         raise HTTPException(status_code=400, detail="Empty text")
     prompt = GRAPH_PROMPT.format(text=req.text)
     try:
-        raw = get_mock_response()
-        #raw = get_AI_response(prompt)
+        #raw = get_mock_response()
+        raw = get_AI_response(prompt)
         print(raw)
 
         if not raw:
@@ -242,6 +314,29 @@ async def expand_fact(req: ExpandFactRequest):
         if not raw:
             raise ValueError("Empty model response")
         data = extract_json(raw)
+        fk = (req.fact_kind or "").strip().lower()
+        if fk == "counterargument":
+            v_err = _validate_counterargument_expand(data, req.parent_node_id)
+            if v_err:
+                repair = COUNTERARGUMENT_EXPAND_REPAIR_PROMPT.format(
+                    validation_error=v_err,
+                    parent_node_id=req.parent_node_id,
+                    fact_text=req.fact_text[:8000],
+                    original_text=req.original_text[:16000],
+                ) + json.dumps(data, ensure_ascii=False)
+                response2 = _generate(repair)
+                raw2 = _response_text(response2)
+                if not raw2:
+                    raise ValueError("Empty repair model response")
+                data = extract_json(raw2)
+                v_err2 = _validate_counterargument_expand(
+                    data, req.parent_node_id
+                )
+                if v_err2:
+                    raise HTTPException(
+                        status_code=422,
+                        detail=f"Counterargument expand shape invalid: {v_err2}",
+                    )
         try:
             _enrich_expand_nodes_if_needed(data, req)
         except Exception as ex:
@@ -250,6 +345,8 @@ async def expand_fact(req: ExpandFactRequest):
         if isinstance(nodes, list):
             _ensure_expand_node_analysis(nodes)
         return GraphResponse(**data)
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

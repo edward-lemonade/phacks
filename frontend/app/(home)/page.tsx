@@ -18,7 +18,7 @@ const GraphCanvas = dynamic(() => import("@/components/GraphCanvas"), {
 	),
 });
 
-const BRAND = "haxiom";
+const BRAND = "phacks";
 
 export default function HomePage() {
 	const sidebarId = useId();

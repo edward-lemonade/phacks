@@ -11,12 +11,12 @@
 }
 
 .typeLabel {
-	font-size: 9px;
+	font-size: 16px;
 	font-family: var(--font-mono);
 	text-transform: uppercase;
 	letter-spacing: 0.12em;
 	color: var(--arg-node-label);
-	margin-bottom: 6px;
+	margin-bottom: 10px;
 }
 
 .labelText {

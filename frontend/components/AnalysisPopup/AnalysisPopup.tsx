@@ -2,38 +2,42 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { apiUrl } from "@/lib/api";
 import {
 	STRENGTH_DISPLAY,
 	normalizeStrengthLabel,
 	type StrengthLabel,
 } from "@/lib/strengthLabel";
-import type { ArgumentNodeData, GraphData } from "@/lib/types";
+import { factKey, type FactKind } from "@/lib/factKey";
+import type { ArgumentNodeData } from "@/lib/types";
 import styles from "./AnalysisPopup.module.css";
-
-type FactKind = "counterargument" | "unacknowledged_strength";
 
 type Props = {
 	node: ArgumentNodeData;
 	context: string;
 	onClose: () => void;
-	onMergeGraph: (fragment: GraphData) => void;
+	/** Parent runs fetch + merge; survives popup close. */
+	onExpandFact: (
+		kind: FactKind,
+		text: string,
+		index: number
+	) => Promise<void>;
+	/** Keys already merged for this node (from parent). */
+	mergedFactKeys: ReadonlySet<string>;
+	/** Fact key whose expand request is in flight (from parent; survives popup close). */
+	pendingExpandFactKey: string | null;
+	/** True while any expand request is in flight (may be for another node). */
+	anyExpandInFlight: boolean;
 };
-
-function factKey(kind: FactKind, index: number) {
-	return `${kind}:${index}`;
-}
 
 export default function AnalysisPopup({
 	node,
 	context,
 	onClose,
-	onMergeGraph,
+	onExpandFact,
+	mergedFactKeys,
+	pendingExpandFactKey,
+	anyExpandInFlight,
 }: Props) {
-	const [addingKey, setAddingKey] = useState<string | null>(null);
-	const [addedKeys, setAddedKeys] = useState<Set<string>>(
-		() => new Set()
-	);
 	const [err, setErr] = useState<string | null>(null);
 	const [mounted, setMounted] = useState(false);
 
@@ -44,41 +48,17 @@ export default function AnalysisPopup({
 	const handleAdd = useCallback(
 		async (kind: FactKind, text: string, index: number) => {
 			const key = factKey(kind, index);
-			if (addedKeys.has(key) || !text.trim()) return;
+			if (mergedFactKeys.has(key) || !text.trim()) return;
 			setErr(null);
-			setAddingKey(key);
 			try {
-				const res = await fetch(apiUrl("/api/expand-fact"), {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						parent_node_id: node.id,
-						fact_kind: kind,
-						fact_text: text,
-						original_text: context,
-						parent_label: node.label,
-						parent_detail: node.detail,
-						parent_type: node.type,
-					}),
-				});
-				if (!res.ok) {
-					const body = (await res.json().catch(() => ({}))) as {
-						detail?: string;
-					};
-					throw new Error(body.detail ?? "Expand failed");
-				}
-				const data = (await res.json()) as GraphData;
-				onMergeGraph(data);
-				setAddedKeys((prev) => new Set(prev).add(key));
+				await onExpandFact(kind, text, index);
 			} catch (e) {
 				setErr(
 					e instanceof Error ? e.message : "Could not add to graph."
 				);
-			} finally {
-				setAddingKey(null);
 			}
 		},
-		[addedKeys, context, node, onMergeGraph]
+		[mergedFactKeys, onExpandFact]
 	);
 
 	const strength: StrengthLabel = normalizeStrengthLabel(node.strength);
@@ -124,14 +104,10 @@ export default function AnalysisPopup({
 				{node.counterarguments.length > 0 ? (
 					<div className={styles.section}>
 						<div className={styles.label}>Counterarguments</div>
-						<p className={styles.hint}>
-							Possible objections — add to the graph to explore
-							them.
-						</p>
 						{node.counterarguments.map((c, i) => {
 							const k = factKey("counterargument", i);
-							const busy = addingKey === k;
-							const done = addedKeys.has(k);
+							const busy = pendingExpandFactKey === k;
+							const done = mergedFactKeys.has(k);
 							return (
 								<div key={k} className={styles.factRow}>
 									<p
@@ -142,7 +118,7 @@ export default function AnalysisPopup({
 									<button
 										type="button"
 										className={styles.factAdd}
-										disabled={busy || done}
+										disabled={done || anyExpandInFlight}
 										onClick={() =>
 											handleAdd("counterargument", c, i)
 										}
@@ -159,19 +135,15 @@ export default function AnalysisPopup({
 					</div>
 				) : null}
 
-				{node.unacknowledged_strengths.length > 0 ? (
+				{node.further_supports.length > 0 ? (
 					<div className={styles.section}>
 						<div className={styles.label}>
-							Unacknowledged strengths
+							Further support
 						</div>
-						<p className={styles.hint}>
-							Ways the claim could be stronger — add to grow the
-							map.
-						</p>
-						{node.unacknowledged_strengths.map((s, i) => {
-							const k = factKey("unacknowledged_strength", i);
-							const busy = addingKey === k;
-							const done = addedKeys.has(k);
+						{node.further_supports.map((s, i) => {
+							const k = factKey("further_support", i);
+							const busy = pendingExpandFactKey === k;
+							const done = mergedFactKeys.has(k);
 							return (
 								<div key={k} className={styles.factRow}>
 									<p
@@ -182,10 +154,10 @@ export default function AnalysisPopup({
 									<button
 										type="button"
 										className={styles.factAdd}
-										disabled={busy || done}
+										disabled={done || anyExpandInFlight}
 										onClick={() =>
 											handleAdd(
-												"unacknowledged_strength",
+												"further_support",
 												s,
 												i
 											)

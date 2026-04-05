@@ -2,13 +2,13 @@
 
 import {
 	useCallback,
+	useEffect,
 	useLayoutEffect,
+	useMemo,
 	useRef,
 	useState,
-	type Dispatch,
 	type MouseEvent,
 	type MutableRefObject,
-	type SetStateAction,
 } from "react";
 import {
 	ReactFlow,
@@ -28,8 +28,16 @@ import "@xyflow/react/dist/style.css";
 import AnalysisPopup from "@/components/AnalysisPopup";
 import ArgumentNode from "@/components/ArgumentNode";
 import { useHierarchicalLayout } from "@/hooks/useHierarchicalLayout";
+import { apiUrl } from "@/lib/api";
+import { factKey, type FactKind } from "@/lib/factKey";
+import {
+	edgeStrokeFromChildStrength,
+	hexToRgba,
+	markerSizeFromChildStrength,
+} from "@/lib/edgeStrengthStyle";
 import { graphNodeToArgumentData } from "@/lib/graphNodeData";
 import { mergeFragmentNearParent } from "@/lib/mergeGraphFragment";
+import { propagateArgumentStrengths } from "@/lib/strengthPropagation";
 import type {
 	ArgumentFlowNode,
 	ArgumentNodeData,
@@ -40,12 +48,9 @@ import styles from "./GraphCanvas.module.css";
 
 const nodeTypes = { argument: ArgumentNode };
 
-const RELATION_COLORS: Record<string, string> = {
+const RELATION_COLORS: Record<"supports" | "contradicts", string> = {
 	supports: "#2d9f6a",
 	contradicts: "#dc5050",
-	qualifies: "#c9a227",
-	assumes: "#8b6fd6",
-	contains_fallacy: "#ea580c",
 };
 
 type FlowEffectsProps = {
@@ -67,56 +72,6 @@ function FlowEffects({ nodes, edges, screenToFlowRef }: FlowEffectsProps) {
 	return null;
 }
 
-type PopupLayerProps = {
-	selectedNode: ArgumentNodeData;
-	originalText: string;
-	onClose: () => void;
-	handleNodeClick: (data: ArgumentNodeData) => void;
-	setNodes: Dispatch<SetStateAction<ArgumentFlowNode[]>>;
-	setEdges: Dispatch<SetStateAction<Edge<EdgeData>[]>>;
-};
-
-function AnalysisPopupLayer({
-	selectedNode,
-	originalText,
-	onClose,
-	handleNodeClick,
-	setNodes,
-	setEdges,
-}: PopupLayerProps) {
-	const { getNode } = useReactFlow();
-
-	const onMergeGraph = useCallback(
-		(fragment: GraphData) => {
-			const parent = getNode(selectedNode.id);
-			const pos = parent?.position ?? { x: 0, y: 0 };
-			const { nodes: addN, edges: addE } = mergeFragmentNearParent(
-				pos,
-				fragment,
-				handleNodeClick
-			);
-			setNodes((nds) => [...nds, ...addN]);
-			setEdges((eds) => [...eds, ...addE]);
-		},
-		[
-			getNode,
-			handleNodeClick,
-			selectedNode.id,
-			setEdges,
-			setNodes,
-		]
-	);
-
-	return (
-		<AnalysisPopup
-			node={selectedNode}
-			context={originalText}
-			onClose={onClose}
-			onMergeGraph={onMergeGraph}
-		/>
-	);
-}
-
 type FlowInnerProps = {
 	initialNodes: ArgumentFlowNode[];
 	initialEdges: Edge<EdgeData>[];
@@ -129,6 +84,15 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 	const [selectedNode, setSelectedNode] = useState<ArgumentNodeData | null>(
 		null
 	);
+	const [mergedFactKeysByNodeId, setMergedFactKeysByNodeId] = useState<
+		Record<string, string[]>
+	>({});
+	const [pendingExpand, setPendingExpand] = useState<{
+		nodeId: string;
+		factKey: string;
+	} | null>(null);
+	const expandInFlightRef = useRef(false);
+	const { getNode } = useReactFlow();
 	const screenToFlowRef = useRef<
 		(p: { x: number; y: number }) => { x: number; y: number }
 	>((p) => p);
@@ -136,6 +100,104 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 	const handleNodeClick = useCallback((nodeData: ArgumentNodeData) => {
 		setSelectedNode(nodeData);
 	}, []);
+
+	const runExpandFact = useCallback(
+		async (
+			parentNode: ArgumentNodeData,
+			kind: FactKind,
+			text: string,
+			index: number
+		) => {
+			if (expandInFlightRef.current) {
+				throw new Error("Wait for the current add to finish.");
+			}
+			const key = factKey(kind, index);
+			expandInFlightRef.current = true;
+			setPendingExpand({ nodeId: parentNode.id, factKey: key });
+			try {
+				const res = await fetch(apiUrl("/api/expand-fact"), {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						parent_node_id: parentNode.id,
+						fact_kind: kind,
+						fact_text: text,
+						original_text: originalText,
+						parent_label: parentNode.label,
+						parent_detail: parentNode.detail,
+						parent_type: parentNode.type,
+					}),
+				});
+				if (!res.ok) {
+					const body = (await res.json().catch(() => ({}))) as {
+						detail?: string;
+					};
+					throw new Error(body.detail ?? "Expand failed");
+				}
+				const data = (await res.json()) as GraphData;
+				const parent = getNode(parentNode.id);
+				const pos = parent?.position ?? { x: 0, y: 0 };
+				const { nodes: addN, edges: addE } = mergeFragmentNearParent(
+					pos,
+					data,
+					handleNodeClick
+				);
+				setNodes((nds) => [...nds, ...addN]);
+				setEdges((eds) => [...eds, ...addE]);
+				setMergedFactKeysByNodeId((prev) => {
+					const existing = prev[parentNode.id] ?? [];
+					if (existing.includes(key)) return prev;
+					return {
+						...prev,
+						[parentNode.id]: [...existing, key],
+					};
+				});
+			} finally {
+				expandInFlightRef.current = false;
+				setPendingExpand((p) =>
+					p?.nodeId === parentNode.id && p?.factKey === key
+						? null
+						: p
+				);
+			}
+		},
+		[getNode, handleNodeClick, originalText, setEdges, setNodes]
+	);
+
+	const handlePopupExpandFact = useCallback(
+		async (kind: FactKind, text: string, index: number) => {
+			const parentNode = selectedNode;
+			if (!parentNode) return;
+			await runExpandFact(parentNode, kind, text, index);
+		},
+		[selectedNode, runExpandFact]
+	);
+
+	const graphStructureKey = useMemo(
+		() =>
+			edges
+				.map(
+					(e) =>
+						`${e.id}:${e.source}:${e.target}:${String(e.data?.relation ?? "")}`
+				)
+				.join("|") +
+			"|" +
+			[...nodes.map((n) => n.id)].sort().join(","),
+		[edges, nodes]
+	);
+
+	useLayoutEffect(() => {
+		setNodes((curr) => propagateArgumentStrengths(curr, edges));
+	}, [graphStructureKey, edges]);
+
+	useEffect(() => {
+		setSelectedNode((prev) => {
+			if (!prev) return prev;
+			const m = nodes.find((n) => n.id === prev.id);
+			if (!m || m.data.strength === prev.strength) return prev;
+			return { ...m.data, onNodeClick: prev.onNodeClick };
+		});
+	}, [nodes]);
 
 	const enrichedNodes: ArgumentFlowNode[] = nodes.map((n) => ({
 		...n,
@@ -148,15 +210,27 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 	}));
 
 	const styledEdges = edges.map((e) => {
-		const color = RELATION_COLORS[String(e.data?.relation ?? "")] ?? "#4a4a55";
+		const child = nodes.find((n) => n.id === e.source);
+		const childStrength = child?.data?.strength ?? "weak";
+		const vis = edgeStrokeFromChildStrength(childStrength);
+		const mk = markerSizeFromChildStrength(childStrength);
+		const rel = String(e.data?.relation ?? "");
+		const color =
+			rel === "supports" || rel === "contradicts"
+				? RELATION_COLORS[rel]
+				: "#4a4a55";
+		const strokeColor = hexToRgba(color, vis.strokeOpacity);
 		return {
 			...e,
-			style: { stroke: color, strokeWidth: 1.5 },
+			style: {
+				stroke: strokeColor,
+				strokeWidth: vis.strokeWidth,
+			},
 			markerEnd: {
 				type: MarkerType.ArrowClosed,
-				color,
-				width: 16,
-				height: 16,
+				color: strokeColor,
+				width: mk.width,
+				height: mk.height,
 			},
 		};
 	});
@@ -188,7 +262,7 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 					strength: "weak",
 					id,
 					counterarguments: [],
-					unacknowledged_strengths: [],
+					further_supports: [],
 					strength_reasoning: "",
 					onNodeClick: handleNodeClick,
 				},
@@ -223,13 +297,20 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 				<Background color="var(--grid)" gap={28} size={1} />
 				<Controls showInteractive={false} />
 				{selectedNode ? (
-					<AnalysisPopupLayer
-						selectedNode={selectedNode}
-						originalText={originalText}
+					<AnalysisPopup
+						node={selectedNode}
+						context={originalText}
 						onClose={() => setSelectedNode(null)}
-						handleNodeClick={handleNodeClick}
-						setNodes={setNodes}
-						setEdges={setEdges}
+						mergedFactKeys={
+							new Set(mergedFactKeysByNodeId[selectedNode.id] ?? [])
+						}
+						pendingExpandFactKey={
+							pendingExpand?.nodeId === selectedNode.id
+								? pendingExpand.factKey
+								: null
+						}
+						anyExpandInFlight={pendingExpand !== null}
+						onExpandFact={handlePopupExpandFact}
 					/>
 				) : null}
 			</ReactFlow>

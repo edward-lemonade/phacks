@@ -14,6 +14,6 @@ Return ONLY valid JSON with this exact shape:
   "strength_reasoning": "..."
 }}
 
-- counterarguments: 2–3 specific arguments against this node (include fallacy-style points here)
+- counterarguments: 0–3 specific arguments against this node (include fallacy-style points here)
 - strength: one of "true", "strong", "weak", "fallacious", "false" with the same meanings as in graph extraction
 - strength_reasoning: one sentence explaining the strength label

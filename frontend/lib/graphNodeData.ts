@@ -12,7 +12,7 @@ export function graphNodeToArgumentData(
 		detail: n.detail,
 		strength: normalizeStrengthLabel(n.strength),
 		counterarguments: n.counterarguments ?? [],
-		unacknowledged_strengths: n.unacknowledged_strengths ?? [],
+		further_supports: n.further_supports ?? [],
 		strength_reasoning: n.strength_reasoning ?? "",
 		onNodeClick,
 	};

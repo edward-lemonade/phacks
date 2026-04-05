@@ -1,7 +1,7 @@
-You expand one analytical point (a counterargument or an unacknowledged strength) into a small argument subgraph
+You expand one analytical point (a counterargument or further support) into a small argument subgraph
 that will be merged into an existing map. The user clicked "Add" on this point to grow the graph.
 
-Parent node id (must appear as target in edges from new nodes): {parent_node_id}
+Parent node id (must appear as target in edges from new nodes where applicable): {parent_node_id}
 Parent node type: {parent_type}
 Parent label: {parent_label}
 Parent detail: {parent_detail}
@@ -14,34 +14,70 @@ Original passage for context:
 
 Return ONLY valid JSON. No markdown, no code fences.
 
-Create 1–3 NEW nodes only (use new ids like "x1", "x2", not existing ids).
-Node types allowed: thesis, subclaim, evidence, axiom, counterclaim only.
+All node types allowed in this API are: thesis, subclaim, evidence, axiom, counterclaim.
 
 Every new node MUST include ALL of the following (never omit keys; never use empty arrays []):
 - id, type, label, detail, strength (one of true|strong|weak|fallacious|false)
-- counterarguments: exactly 2–3 short strings — plausible objections, alternative readings, or fallacy-style critiques (same idea as full graph extraction)
-- unacknowledged_strengths: exactly 1–3 short strings — ways the claim could be stronger, missing evidence, or unstated support
+- counterarguments: exactly 2–3 short strings
+- further_supports: exactly 1–3 short strings
 - strength_reasoning: one sentence explaining the strength label
 
-If the passage is thin, infer plausible counterarguments and strengths from the node label, detail, and fact text — the UI needs hooks so the user can keep expanding the map.
+If the passage is thin, infer plausible counterarguments and strengths from the node label, detail, and fact text.
 
-Edges: point FROM each new child TO the parent node id above (child → parent). Use relation "contradicts" or "qualifies" for counterargument-style facts; "supports" for unacknowledged strength when the new material supports the parent.
+---
 
-Shape (example; every node must match this richness):
+### When fact_kind is "counterargument" (MANDATORY SHAPE)
+
+Produce **2–4 NEW nodes** total:
+
+1. **Exactly one** node with **type "counterclaim"**. It is the objection to the parent. It MUST be the **only** new node that links to the parent.
+
+2. **At least one** additional node whose **type is only one of**: **evidence**, **subclaim**, or **axiom**. These support or spell out the counterclaim.
+
+3. **Edges (child → parent in this graph’s convention)**:
+   - One edge: **source** = the counterclaim’s id, **target** = "{parent_node_id}", **relation** = "contradicts".
+   - For each evidence/subclaim/axiom node: **source** = that node’s id, **target** = the **counterclaim’s id**, **relation** = "supports".
+
+4. Do **not** connect evidence/subclaim/axiom directly to "{parent_node_id}". Do **not** use thesis for this expansion.
+
+5. Labels: keep them short (max 8 words).
+
+Example for counterargument (ids are illustrative):
 {{
   "nodes": [
     {{
       "id": "x1",
-      "type": "subclaim",
+      "type": "counterclaim",
       "label": "...",
       "detail": "...",
       "strength": "weak",
       "counterarguments": ["...", "...", "..."],
-      "unacknowledged_strengths": ["...", "..."],
+      "further_supports": ["...", "..."],
+      "strength_reasoning": "..."
+    }},
+    {{
+      "id": "x2",
+      "type": "evidence",
+      "label": "...",
+      "detail": "...",
+      "strength": "weak",
+      "counterarguments": ["...", "...", "..."],
+      "further_supports": ["...", "..."],
       "strength_reasoning": "..."
     }}
   ],
   "edges": [
-    {{"id": "xe1", "source": "x1", "target": "{parent_node_id}", "relation": "contradicts"}}
+    {{"id": "xe1", "source": "x1", "target": "{parent_node_id}", "relation": "contradicts"}},
+    {{"id": "xe2", "source": "x2", "target": "x1", "relation": "supports"}}
   ]
 }}
+
+---
+
+### When fact_kind is "further_support"
+
+Create **1–3 NEW nodes** only. Types: thesis, subclaim, evidence, axiom, counterclaim (pick what fits).
+
+Edges: point FROM each new child TO "{parent_node_id}" (child → parent). Use **relation** "supports" (or "contradicts" only when the new material directly attacks the parent).
+
+---
