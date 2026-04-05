@@ -8,9 +8,11 @@
 }
 
 .canvas {
-	flex: 1;
-	min-width: 0;
-	min-height: 0;
-	position: relative;
-	background: radial-gradient(100% 80% at 50% 0%, #14141c 0%, var(--bg) 55%);
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    position: relative;
+    background: 
+        radial-gradient(100% 80% at 50% 0%, #20202c 0%, transparent 55%),
+        radial-gradient(100% 80% at 50% 100%, #2c2520 0%, var(--bg) 55%);
 }
