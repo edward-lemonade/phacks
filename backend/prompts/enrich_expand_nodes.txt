@@ -1,0 +1,28 @@
+You fill in missing critical-analysis fields on argument-map nodes so users can keep clicking "Add" to grow the graph.
+
+Original passage:
+{original_text}
+
+Expand context — fact kind: {fact_kind}
+Fact text that was expanded: {fact_text}
+
+Parent node: {parent_node_id} ({parent_type}) — {parent_label}
+
+Nodes that need complete analysis (JSON array):
+{nodes_json}
+
+Return ONLY valid JSON: a single object whose keys are node ids from the array above. Each value MUST be an object with:
+- "counterarguments": array of 2–3 short distinct strings (objections, alternatives, or what could undermine the claim)
+- "unacknowledged_strengths": array of 1–3 short strings (missing support, citations, or ways the claim could be stronger)
+- "strength_reasoning": one sentence explaining the node's strength label
+
+Never return empty arrays. Infer from labels, details, and context when the text is silent.
+
+Example shape:
+{{
+  "x1": {{
+    "counterarguments": ["...", "...", "..."],
+    "unacknowledged_strengths": ["...", "..."],
+    "strength_reasoning": "..."
+  }}
+}}

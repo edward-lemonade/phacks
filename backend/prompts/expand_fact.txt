@@ -16,14 +16,31 @@ Return ONLY valid JSON. No markdown, no code fences.
 
 Create 1–3 NEW nodes only (use new ids like "x1", "x2", not existing ids).
 Node types allowed: thesis, subclaim, evidence, axiom, counterclaim only.
-Each new node must include: id, type, label, detail, strength (one of true|strong|weak|fallacious|false),
-counterarguments (array), unacknowledged_strengths (array), strength_reasoning (string).
+
+Every new node MUST include ALL of the following (never omit keys; never use empty arrays []):
+- id, type, label, detail, strength (one of true|strong|weak|fallacious|false)
+- counterarguments: exactly 2–3 short strings — plausible objections, alternative readings, or fallacy-style critiques (same idea as full graph extraction)
+- unacknowledged_strengths: exactly 1–3 short strings — ways the claim could be stronger, missing evidence, or unstated support
+- strength_reasoning: one sentence explaining the strength label
+
+If the passage is thin, infer plausible counterarguments and strengths from the node label, detail, and fact text — the UI needs hooks so the user can keep expanding the map.
 
 Edges: point FROM each new child TO the parent node id above (child → parent). Use relation "contradicts" or "qualifies" for counterargument-style facts; "supports" for unacknowledged strength when the new material supports the parent.
 
-Shape:
+Shape (example; every node must match this richness):
 {{
-  "nodes": [...],
+  "nodes": [
+    {{
+      "id": "x1",
+      "type": "subclaim",
+      "label": "...",
+      "detail": "...",
+      "strength": "weak",
+      "counterarguments": ["...", "...", "..."],
+      "unacknowledged_strengths": ["...", "..."],
+      "strength_reasoning": "..."
+    }}
+  ],
   "edges": [
     {{"id": "xe1", "source": "x1", "target": "{parent_node_id}", "relation": "contradicts"}}
   ]

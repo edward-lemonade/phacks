@@ -14,7 +14,12 @@ from models import (
     NodeAnalysisRequest,
     NodeAnalysisResponse,
 )
-from prompts import EXPAND_FACT_PROMPT, GRAPH_PROMPT, NODE_ANALYSIS_PROMPT
+from prompts import (
+    ENRICH_EXPAND_NODES_PROMPT,
+    EXPAND_FACT_PROMPT,
+    GRAPH_PROMPT,
+    NODE_ANALYSIS_PROMPT,
+)
 
 load_dotenv()
 
@@ -77,6 +82,110 @@ def extract_json(text: str) -> dict:
     return json.loads(text)
 
 
+def _enrich_expand_nodes_if_needed(data: dict, req: ExpandFactRequest) -> None:
+    """Second LLM pass when expand output omits analysis fields needed for further 'Add' actions."""
+    nodes = data.get("nodes")
+    if not isinstance(nodes, list) or not nodes:
+        return
+    need_payload = []
+    for n in nodes:
+        if not isinstance(n, dict) or not n.get("id"):
+            continue
+        ca = n.get("counterarguments")
+        if not isinstance(ca, list):
+            ca = []
+        us = n.get("unacknowledged_strengths")
+        if not isinstance(us, list):
+            us = []
+        sr = str(n.get("strength_reasoning") or "").strip()
+        if len(ca) >= 2 and len(us) >= 1 and sr:
+            continue
+        need_payload.append(
+            {
+                "id": n["id"],
+                "type": n.get("type", "subclaim"),
+                "label": str(n.get("label", "")),
+                "detail": str(n.get("detail", "")),
+                "strength": str(n.get("strength", "weak")),
+            }
+        )
+    if not need_payload:
+        return
+    prompt = ENRICH_EXPAND_NODES_PROMPT.format(
+        original_text=req.original_text[:16000],
+        fact_kind=req.fact_kind,
+        fact_text=req.fact_text[:8000],
+        parent_node_id=req.parent_node_id,
+        parent_type=req.parent_type,
+        parent_label=req.parent_label[:2000],
+        nodes_json=json.dumps(need_payload, ensure_ascii=False),
+    )
+    response = _generate(prompt)
+    raw = _response_text(response)
+    if not raw:
+        return
+    patch = extract_json(raw)
+    if not isinstance(patch, dict):
+        return
+    by_id = {
+        str(n["id"]): n
+        for n in nodes
+        if isinstance(n, dict) and n.get("id") is not None
+    }
+    for nid, fields in patch.items():
+        nid_s = str(nid)
+        if nid_s not in by_id or not isinstance(fields, dict):
+            continue
+        target = by_id[nid_s]
+        ca = fields.get("counterarguments")
+        if isinstance(ca, list):
+            cleaned = [str(x).strip() for x in ca if str(x).strip()]
+            if len(cleaned) >= 2:
+                target["counterarguments"] = cleaned[:3]
+        us = fields.get("unacknowledged_strengths")
+        if isinstance(us, list):
+            cleaned = [str(x).strip() for x in us if str(x).strip()]
+            if len(cleaned) >= 1:
+                target["unacknowledged_strengths"] = cleaned[:3]
+        sr = fields.get("strength_reasoning")
+        if isinstance(sr, str) and sr.strip():
+            target["strength_reasoning"] = sr.strip()
+
+
+def _ensure_expand_node_analysis(nodes: list) -> None:
+    """Guarantee minimum analysis fields so the client can always offer further expansion."""
+    for n in nodes:
+        if not isinstance(n, dict):
+            continue
+        label = str(n.get("label", "this claim")).strip() or "this claim"
+        short = label[:80]
+
+        ca = n.get("counterarguments")
+        if not isinstance(ca, list):
+            ca = []
+        ca = [str(x).strip() for x in ca if str(x).strip()]
+        if len(ca) < 2:
+            ca.append(f"What evidence or reasoning could challenge “{short}”?")
+        if len(ca) < 2:
+            ca.append("Could a reader reasonably reject this claim on other grounds?")
+        n["counterarguments"] = ca[:3]
+
+        us = n.get("unacknowledged_strengths")
+        if not isinstance(us, list):
+            us = []
+        us = [str(x).strip() for x in us if str(x).strip()]
+        if len(us) < 1:
+            us.append(
+                f"What support, data, or clarification would make “{short}” more compelling?"
+            )
+        n["unacknowledged_strengths"] = us[:3]
+
+        if not str(n.get("strength_reasoning") or "").strip():
+            n["strength_reasoning"] = (
+                "The strength label reflects how well this claim is supported in the given context."
+            )
+
+
 def _generate(prompt: str):
     return get_client().models.generate_content(
         model=MODEL_NAME,
@@ -133,6 +242,13 @@ async def expand_fact(req: ExpandFactRequest):
         if not raw:
             raise ValueError("Empty model response")
         data = extract_json(raw)
+        try:
+            _enrich_expand_nodes_if_needed(data, req)
+        except Exception as ex:
+            print("expand enrich:", ex)
+        nodes = data.get("nodes")
+        if isinstance(nodes, list):
+            _ensure_expand_node_analysis(nodes)
         return GraphResponse(**data)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
