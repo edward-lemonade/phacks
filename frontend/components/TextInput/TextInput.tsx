@@ -5,9 +5,11 @@ import styles from "./TextInput.module.css";
 type Props = {
 	onSubmit: (text: string) => void;
 	loading: boolean;
+	value?: string;
+	onChange?: (text: string) => void;
 };
 
-export default function TextInput({ onSubmit, loading }: Props) {
+export default function TextInput({ onSubmit, loading, value, onChange }: Props) {
 	return (
 		<form
 			className={styles.form}
@@ -26,6 +28,9 @@ export default function TextInput({ onSubmit, loading }: Props) {
 				placeholder="A paragraph, talk outline, or short essay…"
 				rows={4}
 				className={styles.area}
+				value={value}
+				defaultValue={value === undefined ? "" : undefined}
+				onChange={onChange ? (e) => onChange(e.target.value) : undefined}
 			/>
 			<button type="submit" className={styles.submit} disabled={loading}>
 				{loading ? "Analyzing…" : "Analyze"}

@@ -1,0 +1,39 @@
+.toolbar {
+	position: fixed;
+	bottom: 16px;
+	right: 16px;
+	z-index: 50;
+	display: flex;
+	gap: 4px;
+}
+
+.btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	background: #18181b;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	color: var(--muted);
+	cursor: pointer;
+	transition: color 0.15s, border-color 0.15s, background 0.15s;
+    border: 1px solid #6b7fd7;
+}
+
+.btn:hover:not(:disabled) {
+	color: var(--accent);
+	border-color: #3f3f46;
+	background: #1c1c1f;
+    border-color: #818cf8;
+}
+
+.btn:disabled {
+	opacity: 0.35;
+	cursor: not-allowed;
+}
+
+.hiddenInput {
+	display: none;
+}
