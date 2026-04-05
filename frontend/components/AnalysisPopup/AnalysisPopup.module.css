@@ -334,3 +334,36 @@
 	border-color: #3f3f46;
 	color: var(--text);
 }
+
+/* Add these two rules to AnalysisPopup.module.css */
+
+/* Wraps the Add + ✕ buttons in each fact row */
+.factActions {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	flex-shrink: 0;
+}
+
+/* ✕ delete button on each suggested fact */
+.factDelete {
+	background: none;
+	border: none;
+	color: #4b5563;
+	cursor: pointer;
+	font-size: 11px;
+	line-height: 1;
+	padding: 4px 5px;
+	border-radius: 4px;
+	transition: color 0.15s, background 0.15s;
+}
+
+.factDelete:hover:not(:disabled) {
+	color: #f87171;
+	background: rgba(248, 113, 113, 0.08);
+}
+
+.factDelete:disabled {
+	opacity: 0.35;
+	cursor: not-allowed;
+}

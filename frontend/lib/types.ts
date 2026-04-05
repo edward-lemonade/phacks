@@ -58,3 +58,11 @@ export interface NodeAnalysisResult {
 	strength: StrengthLabel;
 	strength_reasoning: string;
 }
+
+export enum Strength {
+	False,
+	Fallacious,
+	Weak,
+	Strong,
+	True,
+}

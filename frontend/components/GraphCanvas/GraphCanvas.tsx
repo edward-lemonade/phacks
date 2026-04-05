@@ -22,6 +22,7 @@ import {
 	useReactFlow,
 	type Connection,
 	type Edge,
+	type NodeChange,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
@@ -89,11 +90,20 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 		nodeId: string;
 		factKey: string;
 	} | null>(null);
+	const [nodeDataVersion, setNodeDataVersion] = useState(0);
 	const expandInFlightRef = useRef(false);
 	const { getNode } = useReactFlow();
 	const screenToFlowRef = useRef<
 		(p: { x: number; y: number }) => { x: number; y: number }
 	>((p) => p);
+
+	// Always-current refs so every propagation call — whether inside a
+	// setNodes updater, an effect, or an event handler — sees the same
+	// consistent snapshot of both nodes and edges.
+	const edgesRef = useRef(edges);
+	useLayoutEffect(() => {
+		edgesRef.current = edges;
+	});
 
 	const handleNodeClick = useCallback((nodeData: ArgumentNodeData) => {
 		setSelectedNode(nodeData);
@@ -177,7 +187,6 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 				throw new Error("Wait for the current add to finish.");
 			}
 			expandInFlightRef.current = true;
-			// Use a sentinel key so anyExpandInFlight becomes true
 			const key = `user:${kind}:${Date.now()}`;
 			setPendingExpand({ nodeId: selectedNode.id, factKey: key });
 			try {
@@ -208,6 +217,70 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 		[selectedNode, originalText, mergeFragment]
 	);
 
+	/** Remove a suggested fact from a node's data and re-propagate strength. */
+	const handleDeleteFact = useCallback(
+		(kind: FactKind, index: number) => {
+			if (!selectedNode) return;
+			const nodeId = selectedNode.id;
+
+			setNodes((nds) => {
+				const updated = nds.map((n) => {
+					if (n.id !== nodeId) return n;
+					const data = { ...n.data };
+					if (kind === "counterargument") {
+						data.counterarguments = data.counterarguments.filter((_, i) => i !== index);
+					} else {
+						data.further_supports = data.further_supports.filter((_, i) => i !== index);
+					}
+					return { ...n, data };
+				});
+				return propagateArgumentStrengths(updated, edgesRef.current);
+			});
+
+			setSelectedNode((prev) => {
+				if (!prev || prev.id !== nodeId) return prev;
+				if (kind === "counterargument") {
+					return {
+						...prev,
+						counterarguments: prev.counterarguments.filter((_, i) => i !== index),
+					};
+				}
+				return {
+					...prev,
+					further_supports: prev.further_supports.filter((_, i) => i !== index),
+				};
+			});
+
+			setNodeDataVersion((v) => v + 1);
+		},
+		// edgesRef is a stable ref — safe to omit from deps.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[selectedNode, setNodes]
+	);
+
+	const handleNodesChange = useCallback(
+		(changes: NodeChange<ArgumentFlowNode>[]) => {
+			onNodesChange(changes);
+
+			const hasRemoval = changes.some((c) => c.type === "remove");
+			if (!hasRemoval) return;
+
+			const removedIds = new Set(
+				changes
+					.filter((c): c is Extract<NodeChange<ArgumentFlowNode>, { type: "remove" }> => c.type === "remove")
+					.map((c) => c.id)
+			);
+			setSelectedNode((prev) =>
+				prev && removedIds.has(prev.id) ? null : prev
+			);
+
+			// Propagate using the ref so the updater always sees the current
+			// edges, not whatever was closed over when this callback was created.
+			setNodes((nds) => propagateArgumentStrengths(nds, edgesRef.current));
+		},
+		[onNodesChange, setNodes]
+	);
+
 	const graphStructureKey = useMemo(
 		() =>
 			edges
@@ -218,10 +291,19 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 		[edges, nodes]
 	);
 
+	// Re-propagate whenever the graph structure or node data changes.
+	// `edges` is intentionally excluded from the dep array — we read it via
+	// edgesRef.current inside the setNodes updater so that the node list
+	// (curr, always fresh from React's queue) and the edge list are always
+	// the same committed snapshot. Including `edges` directly would cause
+	// the effect to close over a render-cycle-old value of edges whenever
+	// both nodes and edges change in the same flush.
 	useLayoutEffect(() => {
-		setNodes((curr) => propagateArgumentStrengths(curr, edges));
-	}, [graphStructureKey, edges]);
+		setNodes((curr) => propagateArgumentStrengths(curr, edgesRef.current));
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [graphStructureKey, nodeDataVersion]);
 
+	// Sync the popup's node data when strengths change.
 	useEffect(() => {
 		setSelectedNode((prev) => {
 			if (!prev) return prev;
@@ -299,7 +381,7 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 			<ReactFlow
 				nodes={enrichedNodes}
 				edges={styledEdges}
-				onNodesChange={onNodesChange}
+				onNodesChange={handleNodesChange}
 				onEdgesChange={onEdgesChange}
 				onConnect={onConnect}
 				onDoubleClick={onFlowDoubleClick}
@@ -328,6 +410,7 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 						anyExpandInFlight={pendingExpand !== null}
 						onExpandFact={handlePopupExpandFact}
 						onUserFact={handleUserFact}
+						onDeleteFact={handleDeleteFact}
 					/>
 				) : null}
 			</ReactFlow>

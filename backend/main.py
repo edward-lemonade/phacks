@@ -39,7 +39,7 @@ app.add_middleware(
 
 # -- Config ---------------------------------------
 
-MOCK_ANALYSIS = False
+MOCK_ANALYSIS = True
 
 # -- Helpers ---------------------------------------
 
@@ -252,6 +252,7 @@ async def analyze(req: AnalyzeRequest):
             raise ValueError("Empty model response")
         return GraphResponse(**parse_graph_response(raw))
     except Exception as e:
+        print("[Error]", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -277,6 +278,7 @@ async def expand_fact(req: ExpandFactRequest):
     except HTTPException:
         raise
     except Exception as e:
+        print("[Error]", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -302,4 +304,5 @@ async def user_fact(req: UserFactRequest):
     except HTTPException:
         raise
     except Exception as e:
+        print("[Error]", e)
         raise HTTPException(status_code=500, detail=str(e))

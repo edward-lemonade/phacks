@@ -3,7 +3,7 @@ import os
 from fastapi import HTTPException
 from google import genai
 
-MODEL_NAME = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+MODEL_NAME = os.environ.get("GEMINI_MODEL", "gemini-2.5-pro")
 _client = None
 
 

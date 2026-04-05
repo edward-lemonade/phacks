@@ -1,78 +1,52 @@
 NODE
 id: n1
 type: thesis
-label: Death penalty for all crimes
-detail: The death penalty should be implemented for all crimes.
+label: Death penalty should be used for all crimes
+detail: The death penalty is the appropriate punishment for every type of crime.
 strength: weak
 counterarguments:
-- Ethical concerns about state-sanctioned killing
-- Risk of executing innocent people
-- Effectiveness as a deterrent is debated
+- Punishment should be proportional to the crime committed.
+- The risk of executing an innocent person is unacceptable.
+- A universal death penalty is a cruel and unusual punishment.
 further_supports:
--
-strength_reasoning: The claim lacks nuanced ethical or legal justification for universal application and relies on a generalization and an ad hominem attack.
+- A universal death penalty provides maximum deterrence.
+strength_reasoning: This is an extreme ethical position that violates the legal and moral principle of proportionality in punishment.
 ---
-
 NODE
 id: n2
 type: subclaim
-label: Bad people repeat crimes
-detail: Individuals who commit bad acts once are likely to repeat them in the future.
-strength: weak
+label: People who do bad things will reoffend
+detail: People who commit a crime once will inevitably commit crimes again in the future.
+strength: false
 counterarguments:
-- Rehabilitation and reform are possible
-- Context and motivation vary greatly
-- Not all 'bad acts' indicate chronic criminality
+- Recidivism rates are not 100% and vary widely by crime and individual.
+- Rehabilitation programs can successfully reduce reoffending.
+- Many first-time offenders never commit another crime.
 further_supports:
--
-strength_reasoning: This is a broad generalization lacking empirical evidence or consideration of rehabilitation, making it a weak basis for the thesis.
+strength_reasoning: This is a factually incorrect overgeneralization; recidivism is a complex issue, not an absolute certainty for every individual.
 ---
-
 NODE
 id: n3
-type: counterclaim
-label: Opposing arguments are valid
-detail: There are valid counterpoints to the death penalty.
-strength: true
-counterarguments:
--
-further_supports:
--
-strength_reasoning: This represents the existence of legitimate counterarguments, which is objectively true for such a contentious topic.
----
-
-NODE
-id: n4
-type: counterclaim
-label: Disagreeing equals criminality
-detail: Those who disagree with the death penalty are likely criminals themselves, so their arguments should be dismissed.
+type: subclaim
+label: Opponents' arguments should be dismissed as biased
+detail: The counterpoints of those who disagree with the universal death penalty should not be respected because the dissenters are likely criminals themselves.
 strength: fallacious
 counterarguments:
-- Ad hominem fallacy invalidates argument
-- Disagreement does not imply criminality
-- Arguments should be judged on merit, not source
+- Arguments should be judged on their own merits, not the speaker's character.
+- Opponents include ethicists, lawyers, and human rights advocates.
+- Accusing all opponents of being criminals is an unsubstantiated generalization.
 further_supports:
--
-strength_reasoning: This is a clear ad hominem fallacy, attacking the person rather than the argument, which completely undermines its validity.
+strength_reasoning: This is a classic ad hominem fallacy, attacking the character of opponents rather than the logic of their arguments.
 ---
-
 EDGE
 id: e1
 source: n2
 target: n1
 relation: supports
 ---
-
 EDGE
 id: e2
 source: n3
 target: n1
-relation: contradicts
----
-
-EDGE
-id: e3
-source: n4
-target: n3
-relation: contradicts
+relation: supports
 ---

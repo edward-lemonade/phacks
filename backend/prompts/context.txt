@@ -39,8 +39,36 @@ relation: <supports | contradicts>
 ### Rules
 
 - Edges point FROM child TO parent (source = child, target = parent).
-- counterarguments: exactly 0–3 items.
-- further_supports: exactly 0–3 items.
+- counterarguments: exactly 0–3 items. If the node is true, there should be 0 counterarguments.
+- further_supports: exactly 0–3 items. If the node is fallacious or false, there should be 0 further_supports.
 - Every node and edge must end with ---.
 - No JSON, no markdown, no code fences. Plain text only.
-- Axioms must always be self-contained, eternal truths with no ambiguation. Use sparingly.
+- Axioms must always be self-contained, eternal truths with no ambiguation, and should always be sources with no inward edges. Use sparingly.
+- ALL created nodes must point toward a parent, EXCEPT for the thesis.
+
+### Reporter nodes are FORBIDDEN
+
+Before finalising any node, check whether the label or detail contains any of these constructions:
+
+  - "some [people/individuals/critics/scholars] [believe/argue/disagree/feel]…"
+  - "there is [debate/disagreement/controversy] about…"
+  - "[arguments/evidence/concerns] exist…"
+  - "not everyone agrees…"
+  - "X has been questioned/challenged/disputed…"
+  - "many feel that…"
+
+If yes → STOP. This is a reporter node: it reports that a position exists
+rather than stating the position. Reporter nodes are FORBIDDEN.
+
+Fix: delete everything up to and including the reporting verb and write
+only the actual claim being reported.
+
+FORBIDDEN:  "Some individuals disagree with universal death penalty use"
+FIXED:      "Death penalty is unjust for non-violent offenders"
+
+FORBIDDEN:  "Critics argue capital punishment deters crime less than life sentences"
+FIXED:      "Capital punishment deters crime less than life sentences"
+
+The node must assert, not report. If you cannot state the claim directly
+because you are uncertain it is true, mark its strength as weak or
+fallacious — do not hide behind a reporter construction.

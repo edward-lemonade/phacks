@@ -8,14 +8,11 @@ Node type rules:
 - "subclaim":     a claim that supports the thesis or another subclaim
 - "evidence":     a fact, statistic, or cited data point
 - "axiom":        an assumed truth or unstated premise
-- "counterclaim": an objection, rebuttal, or fallacy-style attack on another claim.
-  If the text rebukes a potential objection, list the objection as a counterclaim, then list
-  the rebuttal as a counterclaim under that counterclaim (neutralising it).
+- "counterclaim": an objection, rebuttal, fallacy-style attack, or a briefly addressed opposing viewpoint on the parent claim.
 
 Additional rules:
 - The thesis must have no outgoing edges — everything points toward it.
 - Keep labels ≤ 8 words.
-- Only include nodes that take a stance or modify one; skip vague restatements and definitions.
 
 TEXT:
 {text}

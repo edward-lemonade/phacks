@@ -19,6 +19,7 @@ type Props = {
 	onClose: () => void;
 	onExpandFact: (kind: FactKind, text: string, index: number) => Promise<void>;
 	onUserFact: (kind: FactKind, text: string) => Promise<void>;
+	onDeleteFact: (kind: FactKind, index: number) => void;
 	mergedFactKeys: ReadonlySet<string>;
 	pendingExpandFactKey: string | null;
 	anyExpandInFlight: boolean;
@@ -30,6 +31,7 @@ export default function AnalysisPopup({
 	onClose,
 	onExpandFact,
 	onUserFact,
+	onDeleteFact,
 	mergedFactKeys,
 	pendingExpandFactKey,
 	anyExpandInFlight,
@@ -125,14 +127,25 @@ export default function AnalysisPopup({
 							return (
 								<div key={k} className={styles.factRow}>
 									<p className={`${styles.block} ${styles.blockCounter}`}>{c}</p>
-									<button
-										type="button"
-										className={styles.factAdd}
-										disabled={done || inFlight}
-										onClick={() => handleAdd("counterargument", c, i)}
-									>
-										{done ? "Added" : busy ? "…" : "Add"}
-									</button>
+									<div className={styles.factActions}>
+										<button
+											type="button"
+											className={styles.factAdd}
+											disabled={done || inFlight}
+											onClick={() => handleAdd("counterargument", c, i)}
+										>
+											{done ? "Added" : busy ? "…" : "Add"}
+										</button>
+										<button
+											type="button"
+											className={styles.factDelete}
+											aria-label="Remove counterargument"
+											disabled={inFlight}
+											onClick={() => onDeleteFact("counterargument", i)}
+										>
+											✕
+										</button>
+									</div>
 								</div>
 							);
 						})}
@@ -149,14 +162,25 @@ export default function AnalysisPopup({
 							return (
 								<div key={k} className={styles.factRow}>
 									<p className={`${styles.block} ${styles.blockStrength}`}>{s}</p>
-									<button
-										type="button"
-										className={styles.factAdd}
-										disabled={done || inFlight}
-										onClick={() => handleAdd("further_support", s, i)}
-									>
-										{done ? "Added" : busy ? "…" : "Add"}
-									</button>
+									<div className={styles.factActions}>
+										<button
+											type="button"
+											className={styles.factAdd}
+											disabled={done || inFlight}
+											onClick={() => handleAdd("further_support", s, i)}
+										>
+											{done ? "Added" : busy ? "…" : "Add"}
+										</button>
+										<button
+											type="button"
+											className={styles.factDelete}
+											aria-label="Remove further support"
+											disabled={inFlight}
+											onClick={() => onDeleteFact("further_support", i)}
+										>
+											✕
+										</button>
+									</div>
 								</div>
 							);
 						})}

@@ -1,16 +1,229 @@
 NODE
 id: n1
 type: thesis
-label: Free will does not exist
-detail: The central claim asserts that the concept of free will is an illusion or is nonexistent.
-strength: weak
+label: The categorical imperative is a poor moral guide
+detail: Upon closer examination, the categorical imperative reveals itself to be a poor guide to understanding our moral duties, due to its universality requirement, lack of specificity constraints, and conflicting results.
+strength: strong
 counterarguments:
-- Intuitive experience suggests conscious choice.
-- Moral responsibility implies the existence of free will.
-- Many philosophical and religious traditions affirm free will.
+- A defender of Kant could argue that these examples use misformulated or 'gerrymandered' maxims, and that properly formulated maxims would not produce these results.
+- The critique focuses on the 'universal law' formulation, while other formulations of the categorical imperative (e.g., the humanity formulation) may be more robust.
 further_supports:
-- Deterministic universe implies no free choice.
-- Neuroscience links decisions to unconscious brain activity.
-- Psychological studies reveal situational and unconscious influences.
-strength_reasoning: The text presents this claim as a bare assertion without any provided supporting arguments or evidence.
+- The categorical imperative has been criticized for being too rigid, failing to account for situations where moral duties conflict (e.g., lying to a murderer to save a life).
+strength_reasoning: The thesis is supported by three distinct and well-argued lines of reasoning, each substantiated with clear, illustrative examples that expose significant flaws.
+---
+NODE
+id: n2
+type: subclaim
+label: The universality requirement is flawed
+detail: The categorical imperative's requirement for universality is problematic because it rules out intuitively moral actions and fails to account for necessary, non-universal social roles.
+strength: strong
+counterarguments:
+- One could argue that maxims should be about permissions rather than obligations (e.g., 'One may buy bread'), which might resolve the contradiction.
+further_supports:
+- This problem also applies to career choices; if everyone became a doctor, society would collapse, yet becoming a doctor is not immoral.
+strength_reasoning: This claim is convincingly supported by two different types of examples (a mundane action and a social role) that show the inflexibility of the universality test.
+---
+NODE
+id: n3
+type: subclaim
+label: The CI allows arbitrarily specific, unjust maxims
+detail: The categorical imperative does not restrict how specific a maxim can be, allowing one to justify immoral actions by creating highly specific rules that pass the universality test.
+strength: strong
+counterarguments:
+- Kantian ethicists argue that maxims must reflect the agent's true, underlying principle of action, not a post-hoc rationalization crafted to pass the test.
+further_supports:
+- This flaw allows one to justify any action by adding a condition like "...unless my name is John Smith," which would pass the universalization test but is clearly immoral.
+strength_reasoning: This is a classic and devastating logical critique of the imperative, and the example provided clearly illustrates how it can be exploited to justify targeted harm.
+---
+NODE
+id: n4
+type: subclaim
+label: The CI validates conflicting moral maxims
+detail: The categorical imperative is unhelpful because it can validate two directly opposing maxims, offering no guidance on which to follow.
+strength: strong
+counterarguments:
+- A Kantian might argue that in such cases, the actions are morally permissible or 'adiaphora' (morally indifferent), and the CI is only meant to identify duties, not all choices.
+further_supports:
+- The problem applies to many real-world dilemmas, such as "One must always return borrowed property" vs. "One must not return a weapon to an enraged person."
+strength_reasoning: The claim effectively highlights that the test fails in its primary purpose—to provide a clear, unambiguous guide for moral conduct—by showing it can yield contradictory results.
+---
+NODE
+id: n5
+type: evidence
+label: Buying bread on Sunday fails the universality test
+detail: A maxim to "purchase a lot of bread on Sundays" would be judged immoral, because if universalized, it would cause a bread shortage, making the maxim impossible to follow.
+strength: true
+counterarguments:
+- A defender might claim the maxim is poorly formed and the real maxim is something like "One may acquire provisions when needed," which is universalizable.
+further_supports:
+- This same logic applies to other actions like "I will go to the beach on the sunniest day of the year."
+strength_reasoning: This is a sound hypothetical that correctly applies the universalization test to produce a result that is deeply counterintuitive, supporting the parent claim.
+---
+NODE
+id: n6
+type: evidence
+label: Police authority cannot be universalized
+detail: A maxim allowing police officers to detain disobedient people fails the test, because if everyone had this authority, it would result in chaos and abuse of power.
+strength: true
+counterarguments:
+- One could formulate the maxim as "Society will designate specific roles with specific authorities to maintain order," which may be universalizable.
+strength_reasoning: The example correctly identifies a necessary social structure that relies on non-universal permissions, which is incompatible with a simplistic application of the universality test.
+---
+NODE
+id: n7
+type: subclaim
+label: Universality wrongly forbids some intuitively moral actions
+detail: The universality test rules out maxims that are intuitively not immoral, specifically actions that are only permissible because they are not performed by everyone.
+strength: strong
+counterarguments:
+- A Kantian could argue that intuition is an unreliable guide to morality and we should trust the logical rigor of the imperative over our feelings.
+strength_reasoning: This claim logically follows from its supporting example and identifies a key flaw: the CI fails to distinguish between actions that are contingently and necessarily non-universal.
+---
+NODE
+id: n8
+type: subclaim
+label: Universality fails to account for necessary social roles
+detail: The categorical imperative wrongfully assumes all humans are homogenous, struggling to justify the special authorities granted to roles like law enforcement.
+strength: strong
+counterarguments:
+- The principle of universalizability could be applied to the rules governing the system of roles, rather than the actions of individuals within those roles.
+strength_reasoning: This accurately points out a valid conflict between the CI's assumption of equality in action and the functional necessity of differentiated roles in a complex society.
+---
+NODE
+id: n9
+type: evidence
+label: Maxims can be tailored to unjustly target individuals
+detail: One can create a universalizable maxim such as "Only certified police officers have the authority to detain... or innocent people named Lebron James," thus justifying a specific evil.
+strength: true
+counterarguments:
+- This is a 'gerrymandered' maxim; the inclusion of "Lebron James" does not reflect a real principle of action and would be disallowed under a more charitable reading of Kant.
+strength_reasoning: The hypothetical maxim correctly demonstrates the logical exploitability of the rule's lack of a specificity constraint, powerfully supporting its parent claim.
+---
+NODE
+id: n10
+type: evidence
+label: Opposing maxims about detaining individuals can be universalized
+detail: The maxims "Police can unlawfully detain people named Lebron James" and "Police cannot unlawfully detain people named Lebron James" can both be universalized without contradiction.
+strength: true
+counterarguments:
+- A Kantian may argue that the concept of "unlawfully detain" contains a contradiction in will, thus failing the test on other grounds.
+strength_reasoning: This is a correct application of the test that shows it fails to prohibit a specific injustice while also failing to mandate its opposite, revealing its impotence.
+---
+NODE
+id: n11
+type: evidence
+label: Opposing maxims about eating dogs can be universalized
+detail: The maxims “One may eat dogs” and “One shall not eat dogs” can both be universalized without creating an impossibility or contradiction, leaving us with no moral guidance.
+strength: true
+counterarguments:
+- This could be seen as a strength, showing that the CI correctly identifies eating dogs as morally permissible (a choice) rather than a duty or a prohibition.
+strength_reasoning: This example effectively uses a more general, less contrived case to show that the categorical imperative is silent on certain actions, failing to guide conduct.
+---
+NODE
+id: n12
+type: counterclaim
+label: The categorical imperative has some intuitive validity
+detail: The categorical imperative is initially appealing because it has intuitive validity, as seen in its similarity to the Golden Rule and its ability to condemn obvious wrongs like murder.
+strength: strong
+counterarguments:
+- The intuitive appeal stems from its similarity to consequentialist or virtue-based reasoning (e.g., "what if everyone did that?") rather than its deontological purity.
+strength_reasoning: This node accurately represents the argument in favor of the categorical imperative that the author acknowledges before refuting it, a classic rhetorical move.
+---
+NODE
+id: n13
+type: evidence
+label: The CI resembles the widely accepted Golden Rule
+detail: The categorical imperative is similar to the message of "Treat others how you would like to be treated," which most people learn and internalize as children.
+strength: true
+counterarguments:
+- The Golden Rule is based on personal desires, whereas the categorical imperative is based on pure reason and logic; a masochist would will a different Golden Rule.
+strength_reasoning: This is a factually correct comparison between the two principles that strongly supports the claim that the CI has an intuitive, common-sense basis.
+---
+NODE
+id: n14
+type: evidence
+label: The CI correctly identifies murder as immoral
+detail: The maxim “we are allowed to kill other people” is correctly judged invalid by the categorical imperative because its universalization would lead to the collapse of society.
+strength: true
+counterarguments:
+- The reasoning that 'society would fall apart' is a consequentialist argument, not a purely logical contradiction as Kant's theory requires.
+strength_reasoning: This is the standard, correct example used to illustrate how the categorical imperative is supposed to function, supporting the claim that it has some validity.
+---
+EDGE
+id: e1
+source: n2
+target: n1
+relation: supports
+---
+EDGE
+id: e2
+source: n3
+target: n1
+relation: supports
+---
+EDGE
+id: e3
+source: n4
+target: n1
+relation: supports
+---
+EDGE
+id: e4
+source: n7
+target: n2
+relation: supports
+---
+EDGE
+id: e5
+source: n8
+target: n2
+relation: supports
+---
+EDGE
+id: e6
+source: n5
+target: n7
+relation: supports
+---
+EDGE
+id: e7
+source: n6
+target: n8
+relation: supports
+---
+EDGE
+id: e8
+source: n9
+target: n3
+relation: supports
+---
+EDGE
+id: e9
+source: n10
+target: n4
+relation: supports
+---
+EDGE
+id: e10
+source: n11
+target: n4
+relation: supports
+---
+EDGE
+id: e11
+source: n12
+target: n1
+relation: contradicts
+---
+EDGE
+id: e12
+source: n13
+target: n12
+relation: supports
+---
+EDGE
+id: e13
+source: n14
+target: n12
+relation: supports
 ---

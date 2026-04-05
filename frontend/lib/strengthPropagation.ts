@@ -4,122 +4,170 @@ import type { ArgumentFlowNode, EdgeData } from "@/lib/types";
 import { normalizeStrengthLabel } from "@/lib/strengthLabel";
 import type { StrengthLabel } from "@/lib/strengthLabel";
 
-/** Relations from a child that count as attacking the parent (child → parent). */
-export const ATTACK_RELATIONS: ReadonlySet<string> = new Set(["contradicts"]);
+// ─── Strength enum ────────────────────────────────────────────────────────────
 
-// —— Predicates (tweak these rules) ——
-
-/** Strength labels that pressure a parent when unaddressed. */
-export function isThreateningContradictionStrength(s: StrengthLabel): boolean {
-	return s === "true" || s === "strong";
+export enum Strength {
+	False      = 0,
+	Fallacious = 1,
+	Weak       = 2,
+	Strong     = 3,
+	True       = 4,
 }
 
-/** Strength labels that count as “handled” / low threat from sub-structure. */
-export function isLowThreatStrength(s: StrengthLabel): boolean {
-	return s === "weak" || s === "fallacious" || s === "false";
+/** Map from the string labels used elsewhere in the app to the enum. */
+const LABEL_TO_STRENGTH: Record<string, Strength> = {
+	false:      Strength.False,
+	fallacious: Strength.Fallacious,
+	weak:       Strength.Weak,
+	strong:     Strength.Strong,
+	true:       Strength.True,
+};
+
+const STRENGTH_TO_LABEL: Record<Strength, StrengthLabel> = {
+	[Strength.False]:      "false",
+	[Strength.Fallacious]: "fallacious",
+	[Strength.Weak]:       "weak",
+	[Strength.Strong]:     "strong",
+	[Strength.True]:       "true",
+};
+
+function toEnum(s: StrengthLabel | string | unknown): Strength {
+	return LABEL_TO_STRENGTH[String(s).toLowerCase()] ?? Strength.Weak;
+}
+
+function toLabel(s: Strength): StrengthLabel {
+	return STRENGTH_TO_LABEL[s];
+}
+
+// ─── Strength predicates ──────────────────────────────────────────────────────
+
+/** A supporting child actively helps the parent. */
+export function isActiveSupport(s: Strength): boolean {
+	return s >= Strength.Strong;           // Strong or True
+}
+
+/** A supporting child is present but not compelling. */
+export function isPassiveSupport(s: Strength): boolean {
+	return s === Strength.Weak;
+}
+
+/** A contradicting child is a real threat to the parent. */
+export function isThreateningAttack(s: Strength): boolean {
+	return s >= Strength.Strong;           // Strong or True
+}
+
+/** A contradicting child is too weak to damage the parent. */
+export function isNeutralizedAttack(s: Strength): boolean {
+	return s <= Strength.Fallacious;       // False or Fallacious
+}
+
+/** The node's own asserted strength is reliable independent of structure. */
+export function isAxiomaticallyTrue(s: Strength): boolean {
+	return s === Strength.True;
+}
+
+/** The node has been conclusively refuted regardless of support. */
+export function isConclusivelFalse(s: Strength): boolean {
+	return s === Strength.False;
+}
+
+// ─── Inflow helpers ───────────────────────────────────────────────────────────
+
+interface Inflow {
+	relation: "supports" | "contradicts" | string;
+	strength: Strength;
 }
 
 /**
- * An attacking node is “rebuked” when it has at least one child in the graph
- * whose strength is low-threat (sub-claims under the attack weaken it).
+ * Derive the computed strength of a node given its own asserted strength
+ * and the already-resolved strengths of every child that targets it.
+ *
+ * Rules (evaluated in priority order):
+ *
+ * 1. No inflows → keep the node's own asserted strength unchanged.
+ * 2. Any threatening, un-neutralized attack → clamp to Weak at most.
+ *    (A True node attacked by a Strong counterclaim drops to Weak.)
+ * 3. At least one active supporting child and no threatening attacks → Strong.
+ * 4. All attacking children are neutralized and there are supporting children
+ *    → upgrade one step toward the node's own asserted strength (max Strong).
+ * 5. Only passive (Weak) support, no attacks → keep the node's own strength.
+ * 6. Fallback → keep the node's own asserted strength.
  */
-export function attackNodeIsRebukedInGraph(
-	attackerId: string,
-	nodesById: Map<string, { strength: unknown }>,
-	childrenOf: (parentId: string) => string[]
-): boolean {
-	const kids = childrenOf(attackerId);
-	if (kids.length === 0) return false;
-	return kids.some((cid) => {
-		const n = nodesById.get(cid);
-		if (!n) return false;
-		return isLowThreatStrength(normalizeStrengthLabel(n.strength));
-	});
-}
+export function computeStrength(
+	ownStrength: Strength,
+	inflows: Inflow[]
+): Strength {
+	if (inflows.length === 0) return ownStrength;
 
-/** True if this edge from child → parent should participate in attack logic. */
-export function edgeIsAttackOnParent(e: Edge<EdgeData>): boolean {
-	const r = String(e.data?.relation ?? "");
-	return ATTACK_RELATIONS.has(r);
-}
+	const supports = inflows.filter((i) => i.relation === "supports");
+	const attacks  = inflows.filter((i) => i.relation === "contradicts");
 
-/**
- * Parent should be pulled toward weak if any attacker is threatening and not rebuked.
- * Applies to all node types (thesis, evidence, counterclaim, …) uniformly.
- */
-export function shouldDowngradeParentDueToContradictions(
-	parentId: string,
-	edges: Edge<EdgeData>[],
-	strengths: Map<string, StrengthLabel>,
-	nodesById: Map<string, { strength: unknown }>,
-	childrenOf: (parentId: string) => string[]
-): boolean {
-	for (const e of edges) {
-		if (e.target !== parentId) continue;
-		if (!edgeIsAttackOnParent(e)) continue;
-		const sid = e.source;
-		const s = strengths.get(sid) ?? normalizeStrengthLabel(nodesById.get(sid)?.strength);
-		if (!isThreateningContradictionStrength(s)) continue;
-		if (attackNodeIsRebukedInGraph(sid, nodesById, childrenOf)) continue;
-		return true;
+	// Summarise the support side.
+	const bestSupport: Strength = supports.length > 0
+		? (Math.max(...supports.map((i) => i.strength)) as Strength)
+		: Strength.False;
+	const hasActiveSupport = supports.some((i) => isActiveSupport(i.strength));
+	const hasAnySupport    = supports.length > 0;
+
+	// Summarise the attack side.
+	const bestAttack: Strength = attacks.length > 0
+		? (Math.max(...attacks.map((i) => i.strength)) as Strength)
+		: Strength.False;
+	const hasAnyAttack          = attacks.length > 0;
+	const hasThreateningAttack  = attacks.some((i) => isThreateningAttack(i.strength));
+	const allAttacksNeutralized = hasAnyAttack && attacks.every((i) => isNeutralizedAttack(i.strength));
+	const hasLiveAttack         = hasAnyAttack && !allAttacksNeutralized;
+
+	// ── No attacks present ───────────────────────────────────────────────────
+	if (!hasAnyAttack) {
+		if (!hasAnySupport)   return ownStrength;     // no inflows (safety net)
+		if (hasActiveSupport) return Strength.Strong; // strong/true child → Strong
+		                      return Strength.Weak;   // only weak/fallacious support → Weak
 	}
-	return false;
-}
 
-/**
- * Parent can move from weak → strong when every attacking edge is either
- * non-threatening, or a threatening attacker is rebuked in the graph.
- */
-export function shouldUpgradeParentAfterRebukes(
-	parentId: string,
-	edges: Edge<EdgeData>[],
-	strengths: Map<string, StrengthLabel>,
-	nodesById: Map<string, { strength: unknown }>,
-	childrenOf: (parentId: string) => string[]
-): boolean {
-	const attacks = edges.filter(
-		(e) => e.target === parentId && edgeIsAttackOnParent(e)
-	);
-	if (attacks.length === 0) return false;
-	return attacks.every((e) => {
-		const sid = e.source;
-		const s = strengths.get(sid) ?? normalizeStrengthLabel(nodesById.get(sid)?.strength);
-		if (!isThreateningContradictionStrength(s)) return true;
-		return attackNodeIsRebukedInGraph(sid, nodesById, childrenOf);
-	});
-}
+	// ── No support present ───────────────────────────────────────────────────
+	if (!hasAnySupport) {
+		if (!hasThreateningAttack) return ownStrength;          // weak/fallacious attacks → no effect
+		if (bestAttack >= Strength.True)   return Strength.False; // conclusive refutation
+		                                   return Strength.Weak;  // strong attack → floor Weak
+	}
 
-function findRootNodeIds(
-	nodes: ArgumentFlowNode[],
-	edges: Edge<EdgeData>[]
-): string[] {
-	const targets = new Set(edges.map((e) => e.target));
-	return nodes.map((n) => n.id).filter((id) => !targets.has(id));
-}
+	// ── Both attacks and supports present ────────────────────────────────────
+	if (allAttacksNeutralized) {
+		// Every attacker is False or Fallacious — support wins uncontested.
+		if (hasActiveSupport) return Strength.Strong;
+		                      return Strength.Weak;
+	}
 
-function depthFromRoots(
-	rootIds: string[],
-	childrenOf: (id: string) => string[]
-): Map<string, number> {
-	const depth = new Map<string, number>();
-	const q = [...rootIds];
-	for (const r of rootIds) depth.set(r, 0);
-	while (q.length) {
-		const p = q.shift()!;
-		const d = depth.get(p) ?? 0;
-		for (const c of childrenOf(p)) {
-			if (!depth.has(c)) {
-				depth.set(c, d + 1);
-				q.push(c);
-			}
+	if (hasLiveAttack && hasThreateningAttack) {
+		// Live threatening attack present.
+		if (hasActiveSupport && bestSupport > bestAttack) {
+			// Support outweighs attack — hold at Weak rather than collapsing further.
+			return Strength.Weak;
 		}
+		// Attack dominates or ties.
+		if (bestAttack >= Strength.True) return Strength.False;
+		                                 return Strength.Weak;
 	}
-	return depth;
+
+	if (hasLiveAttack && !hasThreateningAttack) {
+		// Live but non-threatening attacks (Weak contradictions) — support can carry.
+		if (hasActiveSupport) return Strength.Strong;
+		                      return Strength.Weak;
+	}
+
+	// Exhaustive — unreachable.
+	return ownStrength;
 }
 
+// ─── Graph traversal ──────────────────────────────────────────────────────────
+
 /**
- * Recompute strengths bottom-up (leaves → roots). Returns a new nodes array only if
- * some strength changed; otherwise returns the input reference.
+ * Recompute strengths bottom-up (leaves → roots) by recursively resolving each
+ * node from the strengths of its children before evaluating the node itself.
+ *
+ * Returns a new nodes array only when at least one strength changed; otherwise
+ * returns the original reference so React can skip re-renders.
  */
 export function propagateArgumentStrengths(
 	nodes: ArgumentFlowNode[],
@@ -127,71 +175,89 @@ export function propagateArgumentStrengths(
 ): ArgumentFlowNode[] {
 	if (nodes.length === 0) return nodes;
 
-	const nodesById = new Map(nodes.map((n) => [n.id, n.data]));
+	// Build adjacency: parent → children (children are edge sources)
 	const childrenByParent = new Map<string, string[]>();
 	for (const e of edges) {
 		const list = childrenByParent.get(e.target) ?? [];
 		list.push(e.source);
 		childrenByParent.set(e.target, list);
 	}
-	const childrenOf = (parentId: string) => childrenByParent.get(parentId) ?? [];
 
-	const roots = findRootNodeIds(nodes, edges);
-	const rootList = roots.length > 0 ? roots : [nodes[0].id];
-
-	const depthMap = depthFromRoots(rootList, childrenOf);
-	for (const n of nodes) {
-		if (!depthMap.has(n.id)) depthMap.set(n.id, 0);
-	}
-	const order = [...nodes]
-		.map((n) => n.id)
-		.sort((a, b) => (depthMap.get(b) ?? 0) - (depthMap.get(a) ?? 0));
-
-	const strengths = new Map<string, StrengthLabel>();
-	for (const n of nodes) {
-		strengths.set(n.id, normalizeStrengthLabel(n.data.strength));
+	// Build edge lookup: child id → { relation, target }
+	const edgesBySource = new Map<string, { relation: string; target: string }[]>();
+	for (const e of edges) {
+		const list = edgesBySource.get(e.source) ?? [];
+		list.push({ relation: String(e.data?.relation ?? ""), target: e.target });
+		edgesBySource.set(e.source, list);
 	}
 
-	for (const id of order) {
-		const cur = strengths.get(id) ?? "weak";
-		let next = cur;
+	const ownStrengthOf = new Map<string, Strength>(
+		nodes.map((n) => [n.id, toEnum(n.data.strength)])
+	);
 
-		const down = shouldDowngradeParentDueToContradictions(
-			id,
-			edges,
-			strengths,
-			nodesById,
-			childrenOf
+	// Memoised recursive resolver — each node is computed exactly once.
+	const resolved = new Map<string, Strength>();
+
+	function resolve(id: string): Strength {
+		if (resolved.has(id)) return resolved.get(id)!;
+
+		// Prevent infinite loops in cycles by seeding with own strength first.
+		resolved.set(id, ownStrengthOf.get(id) ?? Strength.Weak);
+
+		const children = childrenByParent.get(id) ?? [];
+		const inflows: Inflow[] = children.map((cid) => {
+			// Find the edge that connects this child to this parent.
+			const edgeInfo = (edgesBySource.get(cid) ?? []).find(
+				(e) => e.target === id
+			);
+			return {
+				relation: edgeInfo?.relation ?? "supports",
+				strength: resolve(cid),
+			};
+		});
+
+		const computed = computeStrength(
+			ownStrengthOf.get(id) ?? Strength.Weak,
+			inflows
 		);
-		const up = shouldUpgradeParentAfterRebukes(
-			id,
-			edges,
-			strengths,
-			nodesById,
-			childrenOf
-		);
-
-		if (down && (cur === "strong" || cur === "true")) {
-			next = "weak";
-		} else if (!down && up && cur === "weak") {
-			next = "strong";
-		}
-
-		strengths.set(id, next);
+		resolved.set(id, computed);
+		return computed;
 	}
 
+	for (const n of nodes) resolve(n.id);
+
+	// Apply results — return original ref if nothing changed.
 	let changed = false;
 	const out = nodes.map((n) => {
-		const s = strengths.get(n.id) ?? normalizeStrengthLabel(n.data.strength);
-		if (s !== n.data.strength) {
-			changed = true;
-			return {
-				...n,
-				data: { ...n.data, strength: s },
-			};
-		}
-		return n;
+		const next = toLabel(resolved.get(n.id) ?? toEnum(n.data.strength));
+		if (next === n.data.strength) return n;
+		changed = true;
+		return { ...n, data: { ...n.data, strength: next } };
 	});
+
+	// ── Sanity-check logging ──────────────────────────────────────────────────
+	const before = nodes.map((n) => ({ id: n.id, label: n.data.label, strength: n.data.strength }));
+	const after  = out.map((n)  => ({ id: n.id, label: n.data.label, strength: n.data.strength }));
+	const diffs  = before.filter((b, i) => b.strength !== after[i].strength);
+
+	console.group(
+		`[propagate] nodes=${nodes.length} edges=${edges.length} changed=${changed} diffs=${diffs.length}`
+	);
+	console.log("edges", edges.map((e) => ({ src: e.source, tgt: e.target, rel: e.data?.relation })));
+	if (diffs.length > 0) {
+		diffs.forEach((b, _) => {
+			const a = after.find((x) => x.id === b.id)!;
+			console.log(`  ${b.label} (${b.id}): ${b.strength} → ${a.strength}`);
+		});
+	} else {
+		console.log("  no strength changes");
+		console.log("before", before);
+		console.log("resolved", Object.fromEntries(
+			[...resolved.entries()].map(([id, s]) => [id, toLabel(s)])
+		));
+	}
+	console.groupEnd();
+	// ─────────────────────────────────────────────────────────────────────────
 
 	return changed ? out : nodes;
 }
