@@ -1,0 +1,27 @@
+.flowRoot {
+	position: absolute;
+	inset: 0;
+}
+
+.flow {
+	width: 100% !important;
+	height: 100% !important;
+	background: transparent !important;
+}
+
+.flow :global(.react-flow__controls) {
+	border-radius: 8px;
+	overflow: hidden;
+	border: 1px solid var(--border);
+}
+
+.flow :global(.react-flow__controls-button) {
+	background: var(--surface) !important;
+	border-color: var(--border) !important;
+	color: var(--muted) !important;
+}
+
+.flow :global(.react-flow__controls-button:hover) {
+	background: #141418 !important;
+	color: var(--text) !important;
+}

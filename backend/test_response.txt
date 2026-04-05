@@ -3,362 +3,324 @@
   "nodes": [
     {
       "id": "n1",
-      "type": "thesis",
-      "label": "CI is a poor guide to moral duties",
-      "detail": "The categorical imperative reveals itself to be a poor guide to understanding our moral duties, due to its requirement for universality, no constraints on maxim specificity, and conflicting results.",
-      "strength": 0.9,
+      "type": "counterclaim",
+      "label": "CI has intuitive validity",
+      "detail": "It is evident that the categorical imperative has at least some intuitive validity to it.",
+      "strength": "weak",
       "counterarguments": [
-        "A Kantian might argue the author misinterprets or misapplies the categorical imperative's full scope.",
-        "The problems presented might be addressable by other formulations of the categorical imperative or within a more complete Kantian system (e.g., duties of perfect and imperfect obligation).",
-        "The 'intuitive morality' used as a benchmark is subjective and not a universally accepted standard for evaluating moral theories."
+        "Intuitive validity doesn't equate to comprehensive moral guidance.",
+        "The subsequent arguments in the text directly challenge its practical utility."
       ],
       "unacknowledged_strengths": [
-        "Could cite additional philosophical critiques of the categorical imperative to broaden support.",
-        "Could delve deeper into Kant's own responses or revisions to these specific criticisms, if any exist.",
-        "Could compare CI's failures to other ethical frameworks to highlight its unique shortcomings."
+        "Aligns with common moral wisdom like the Golden Rule.",
+        "Suggests a basic appeal that resonates with many."
       ],
-      "fallacies": [],
-      "strength_score": 0.85,
-      "strength_reasoning": "The thesis is strongly supported by three distinct and well-elaborated subclaims, each with clear illustrative evidence, making a compelling case within the scope of the text."
+      "strength_reasoning": "This claim is immediately undermined by the author's subsequent detailed arguments, rendering its initial strength insufficient."
     },
     {
       "id": "n2",
-      "type": "subclaim",
-      "label": "Universality rules out intuitively moral actions",
-      "detail": "One problem that the categorical imperative faces is that it tends to rule out maxims that are intuitively not immoral. Some actions are allowed to be done specifically because they are not universal, though the categorical imperative does not account for this.",
-      "strength": 0.8,
+      "type": "thesis",
+      "label": "CI is a poor guide to moral duties",
+      "detail": "The categorical imperative reveals itself to be a poor guide to understanding our moral duties, due to its requirement for universality, no constraints on maxim specificity, and conflicting results.",
+      "strength": "strong",
       "counterarguments": [
-        "Kantians might argue that these specific maxims (like buying bread) are not the kind of 'moral duties' the CI is designed to test.",
-        "One could argue that the 'intuitive' judgment of morality is flawed or culturally relative.",
-        "The CI might be intended for more fundamental, abstract moral principles, not everyday actions."
+        "Kantian scholars argue the CI is often misinterpreted, not inherently flawed.",
+        "A proper Kantian application requires careful maxim formulation, avoiding literal pitfalls."
       ],
       "unacknowledged_strengths": [
-        "Could provide more examples of 'intuitively not immoral' actions that fail the universality test.",
-        "Could quote Kant on the scope of maxims the CI should apply to, to show the author is applying it fairly."
+        "Provides a structured critique of specific CI weaknesses.",
+        "Uses relatable, albeit sometimes exaggerated, examples to illustrate points."
       ],
-      "fallacies": [],
-      "strength_score": 0.8,
-      "strength_reasoning": "This subclaim is clearly articulated and supported by a specific, albeit debatable, example that highlights the issue of universality when applied to seemingly innocuous actions."
+      "strength_reasoning": "The thesis is strongly supported by three distinct and detailed subclaims, each with illustrative examples and logical reasoning presented in the text."
     },
     {
       "id": "n3",
-      "type": "evidence",
-      "label": "Bread maxim causes shortage if universal",
-      "detail": "The maxim: 'One shall purchase a lot of bread on Sundays'... if everyone in the world were to buy large amounts of bread... we would find ourselves in a severe bread shortage that would make it impossible for everyone to act in accordance with the maxim. We experience a contradiction.",
-      "strength": 0.7,
+      "type": "subclaim",
+      "label": "Universality rules out intuitively moral maxims",
+      "detail": "One problem that the categorical imperative faces is that it tends to rule out maxims that are intuitively not immoral.",
+      "strength": "strong",
       "counterarguments": [
-        "The example might be a misapplication of the categorical imperative, as Kant may not have intended it for such specific, non-moral maxims.",
-        "A different interpretation of 'universal law' might not lead to a contradiction, focusing on the *intent* rather than the logistical outcome.",
-        "The scenario exaggerates the consequences; a single person acting on the maxim causes no harm."
+        "Kantians might argue that intuition is not the ultimate test for moral laws.",
+        "A maxim's 'intuitive morality' can vary culturally and individually."
       ],
       "unacknowledged_strengths": [
-        "Could cite a philosophical source that discusses the 'bread problem' or similar examples in Kantian critique.",
-        "Could explain why this specific maxim is considered a valid test case for the CI, based on Kant's writings."
+        "Highlights a practical concern about the CI's output.",
+        "Draws attention to the potential for counterintuitive results."
       ],
-      "fallacies": [],
-      "strength_score": 0.7,
-      "strength_reasoning": "The evidence clearly illustrates the author's point but relies on an interpretation of how the Categorical Imperative should apply, which might be debatable for some Kantians."
+      "strength_reasoning": "This claim is well-supported by the 'universal bread buying' example, which clearly demonstrates how a seemingly innocuous action becomes problematic under strict universalization."
     },
     {
       "id": "n4",
-      "type": "subclaim",
-      "label": "Universality assumes humans are equal",
-      "detail": "the universality aspect of the categorical imperative attempts to establish values of fairness and impartiality by wrongfully assuming all humans to be equal and homogenous.",
-      "strength": 0.8,
+      "type": "evidence",
+      "label": "Example: universal bread buying",
+      "detail": "If everyone in the world were to buy large amounts of bread from stores and bakeries, we would find ourselves in a severe bread shortage that would make it impossible for everyone to act in accordance with the maxim.",
+      "strength": "strong",
       "counterarguments": [
-        "Kantians might argue the CI promotes moral equality, not factual homogeneity, and duties can be differentiated based on roles if those roles are universally justifiable.",
-        "The CI can be interpreted to allow for universally applicable rules for specific roles (e.g., 'A police officer should do X').",
-        "The argument could be seen as conflating 'equality' in moral worth with 'equality' in societal function."
+        "The maxim 'purchase a lot of bread' is ill-defined; a Kantian would demand a more precise maxim.",
+        "This example might be interpreted as an imperfect duty, not a perfect one, allowing for exceptions."
       ],
       "unacknowledged_strengths": [
-        "Could cite specific Kantian texts that discuss (or fail to discuss) how the CI applies to differentiated societal roles.",
-        "Could explore alternative moral theories that explicitly account for specialized roles while maintaining moral principles."
+        "Effectively illustrates the potential for logical contradiction from literal universalization.",
+        "Highlights the impracticality of applying strict universality to everyday actions."
       ],
-      "fallacies": [],
-      "strength_score": 0.8,
-      "strength_reasoning": "This subclaim is well-supported by a relevant example that highlights a practical difficulty when applying strict universality to a differentiated society."
+      "strength_reasoning": "The example vividly demonstrates the contradiction arising from universalizing a simple maxim, thus serving as strong evidence for the universality problem."
     },
     {
       "id": "n5",
-      "type": "evidence",
-      "label": "Police authority maxim contradicts specific roles",
-      "detail": "if we propose the maxim 'One is allowed to capture and detain people who act disobedient', we find that it is only moral for police officers to adhere to this maxim if everyone else also had the authority to do so.",
-      "strength": 0.85,
+      "type": "axiom",
+      "label": "CI assumes world capacity for universal action",
+      "detail": "the categorical imperative assumes that in order for a certain maxim to be moral, the world must have the capacity for everyone to follow it.",
+      "strength": "true",
       "counterarguments": [
-        "A Kantian could argue that the maxim should be more specific, like 'One who is a duly appointed police officer is allowed to...', which could then be universalized.",
-        "The example could be seen as failing to properly formulate the maxim in a Kantian sense, rather than a flaw of the CI itself.",
-        "The text assumes that granting special authority is inherently moral, which some ethical systems might dispute."
+        "Kantians would argue this is not an assumption but a test of logical consistency."
       ],
       "unacknowledged_strengths": [
-        "Could provide historical context on how Kant himself addressed or might have addressed the role of state authority.",
-        "Could contrast with theories that explicitly integrate social roles into moral duties."
+        "Accurately describes a core mechanism of the categorical imperative's universalization test."
       ],
-      "fallacies": [],
-      "strength_score": 0.85,
-      "strength_reasoning": "The example effectively illustrates the tension between universalizability and the necessity of specialized societal roles, making it a strong piece of evidence for the subclaim."
+      "strength_reasoning": "This statement accurately describes a fundamental requirement and underlying principle of Kant's categorical imperative."
     },
     {
       "id": "n6",
       "type": "subclaim",
-      "label": "CI lacks specificity limits, enables evils",
-      "detail": "the categorical imperative: it does not restrict how specific a maxim may be. Exploitations of this flaw can result in even further counterintuitive conclusions. We can add an arbitrary amount of conditional statements to a maxim, torturing it to work and be able to justify highly specific evils that result in no impossibility or contradiction.",
-      "strength": 0.9,
+      "label": "Universality assumes humans equal/homogenous",
+      "detail": "the universality aspect of the categorical imperative attempts to establish values of fairness and impartiality by wrongfully assuming all humans to be equal and homogenous.",
+      "strength": "strong",
       "counterarguments": [
-        "Kantians might argue that maxims must be genuine moral principles, not just any proposition, and that overly specific maxims violate the spirit of the CI.",
-        "One could argue that the 'intent' behind such specific maxims would betray a non-universalizable principle, even if the wording superficially passes.",
-        "Kant's full system (e.g., distinction between perfect and imperfect duties) might provide implicit constraints on maxim formulation."
+        "Kantian theory argues for moral equality of rational agents, not equality of social roles or capabilities.",
+        "Maxims for specific roles can be universalized by including the role in the maxim."
       ],
       "unacknowledged_strengths": [
-        "Could cite philosophical debates on the 'maxim problem' in Kantian ethics.",
-        "Could explore how other moral theories handle the specificity of moral rules."
+        "Addresses a common criticism of abstract universal moral theories.",
+        "Points out the practical challenges of applying CI in a complex, differentiated society."
       ],
-      "fallacies": [],
-      "strength_score": 0.9,
-      "strength_reasoning": "This subclaim is very strong, addressing a widely recognized vulnerability in the Categorical Imperative that the author clearly illustrates with a compelling example."
+      "strength_reasoning": "This claim is effectively supported by the police officer example, which demonstrates the difficulty of universalizing actions tied to specialized societal roles."
     },
     {
       "id": "n7",
       "type": "evidence",
-      "label": "Specific 'Lebron James' maxim passes CI but unjust",
-      "detail": "'Only certified police officers have the authority to capture and detain those who act disobedient with the law, or innocent people named Lebron James.' ...the maxim generates no issues to anyone else once universalized. We now have to accept that it is moral for people named Lebron James to be detained simply for having the name Lebron James.",
-      "strength": 0.9,
+      "label": "Example: universal police authority",
+      "detail": "if we propose the maxim “One is allowed to capture and detain people who act disobedient”, we find that it is only moral for police officers to adhere to this maxim if everyone else also had the authority to do so.",
+      "strength": "strong",
       "counterarguments": [
-        "A Kantian might argue that such a maxim would still fail based on the *will* behind it, or that it cannot be consistently willed as a universal law for all rational beings.",
-        "The example highlights a flaw in the *formulation* of maxims rather than the CI itself, suggesting a need for stricter rules on maxim construction.",
-        "The example is extreme, and practical application of CI would not involve such arbitrarily targeted maxims."
+        "This maxim is poorly formulated; a Kantian would argue that the role 'police officer' must be part of the maxim.",
+        "The example leads to a chaotic outcome, which is precisely what the CI aims to prevent if universalized."
       ],
       "unacknowledged_strengths": [
-        "Could provide a counter-example where a specific but morally justifiable maxim works with the CI.",
-        "Could reference actual historical attempts to legislate or justify specific injustices using similar reasoning."
+        "Highlights the immediate societal breakdown implied by universalizing specialized powers.",
+        "Effectively illustrates the problematic nature of 'homogenous' application."
       ],
-      "fallacies": [],
-      "strength_score": 0.9,
-      "strength_reasoning": "This is a highly effective and illustrative example that strongly supports the claim about maxim specificity, showcasing a clear and counterintuitive outcome if the CI is applied literally."
+      "strength_reasoning": "The example clearly illustrates the societal chaos that would ensue if a specialized maxim were universally applied to all individuals, supporting the argument that CI assumes problematic homogeneity."
     },
     {
       "id": "n8",
-      "type": "subclaim",
-      "label": "CI validates directly opposing maxims",
-      "detail": "the categorical imperative... can validate two maxims that directly oppose each other. ...Kant wants us to do only in accordance with what can be universal law, but both A and B can become universal law, and we cannot adhere to both at the same time.",
-      "strength": 0.95,
+      "type": "axiom",
+      "label": "Law enforcement grants special authority",
+      "detail": "The point of law enforcement is to grant specific members of society special authority to help safeguard the interests of everyone else.",
+      "strength": "true",
       "counterarguments": [
-        "Kantians might argue that true moral maxims would not exist in direct contradiction or that a deeper Kantian analysis (e.g., concerning perfect duties vs. imperfect duties) would resolve such conflicts.",
-        "The examples chosen might be too simplistic, and a more robust application of the CI would inherently prevent such contradictions.",
-        "The ability to universalize a maxim does not necessarily mean it *must* be followed, especially if an opposing universalizable maxim also exists, suggesting the CI needs further rules."
+        "Debates about the legitimacy or scope of such authority may exist, but the core function described is widely accepted."
       ],
       "unacknowledged_strengths": [
-        "Could cite specific philosophical discussions on Kant's ability to resolve conflicting duties.",
-        "Could explore how other ethical systems (e.g., utilitarianism) handle conflicting moral imperatives."
+        "Provides a clear, real-world context for why universal application of certain maxims is problematic.",
+        "Underpins the critique of CI's assumption of homogeneity."
       ],
-      "fallacies": [],
-      "strength_score": 0.95,
-      "strength_reasoning": "This subclaim presents a fundamental and very strong critique, demonstrating that the CI can fail to provide clear moral guidance even on general issues, which is a major weakness for a prescriptive moral theory."
+      "strength_reasoning": "This statement reflects a widely accepted and observable function of law enforcement in most organized societies."
     },
     {
       "id": "n9",
-      "type": "evidence",
-      "label": "Conflicting 'Lebron James' maxims both universalize",
-      "detail": "if we define maxim A as 'Police officers can unlawfully detain people named Lebron James for no reason', and maxim B as 'Police officers cannot unlawfully detain people named Lebron James for no reason', we find that we can universalize both without any issues.",
-      "strength": 0.9,
+      "type": "axiom",
+      "label": "People are not equal in roles/powers",
+      "detail": "people are not all equal; individuals have different powers and roles in society.",
+      "strength": "true",
       "counterarguments": [
-        "A Kantian might argue that maxim A itself contains an implicit contradiction with the concept of law enforcement or justice, making it non-universalizable by other Kantian principles.",
-        "The example is deliberately extreme, and the CI's utility is not meant for such contradictory specific maxims.",
-        "The formulation 'unlawfully detain' might inherently signal a non-moral action, thus not a proper maxim for CI testing."
+        "The concept of 'equality' can be nuanced (e.g., equality of opportunity vs. outcome, moral equality vs. social roles)."
       ],
       "unacknowledged_strengths": [
-        "Could show how a non-Kantian system would resolve this specific conflict, highlighting CI's failure.",
-        "Could analyze how Kant distinguishes between 'lawful' and 'moral' actions, and how that applies here."
+        "Provides a factual basis for challenging the universal application of maxims without regard for social structure.",
+        "Emphasizes the practical complexities of a diverse society."
       ],
-      "fallacies": [],
-      "strength_score": 0.9,
-      "strength_reasoning": "This piece of evidence provides a strong, clear, and stark illustration of the conflict problem, especially following the previous specificity critique, making it very effective."
+      "strength_reasoning": "This is a descriptive statement about the inherent differentiation of roles and abilities in human societies, making it verifiably true."
     },
     {
       "id": "n10",
-      "type": "evidence",
-      "label": "Conflicting 'eat dogs' maxims both universalize",
-      "detail": "Consider the following maxims 'One may eat dogs' and 'One shall not eat dogs'. Once again, we can universalize directly opposing maxims without experiencing contradiction or impossibility in each independent case. The categorical imperative does not at all guide us in determining whether it is moral to eat dogs or not.",
-      "strength": 0.9,
+      "type": "subclaim",
+      "label": "Specificity problem: no limit on maxim specificity",
+      "detail": "the categorical imperative as stated by Kant also does not limit how specific a maxim can be.",
+      "strength": "strong",
       "counterarguments": [
-        "A Kantian might argue that whether one eats dogs or not falls under imperfect duties, where some latitude is permitted as long as no perfect duty is violated.",
-        "One could argue that the CI is designed to define *perfect duties*, and that imperfect duties (like dietary choices) are by their nature less prescriptive.",
-        "The absence of contradiction doesn't mean both are *equally* moral, merely that both are *permissible* from a certain perspective, which isn't necessarily a failure of CI."
+        "Kantian theory implicitly expects maxims to be general principles, not hyper-specific loopholes.",
+        "Other formulations of the CI (e.g., Humanity Formula) would reject such maxims."
       ],
       "unacknowledged_strengths": [
-        "Could contrast with how a utilitarian or virtue ethicist would approach the 'eating dogs' dilemma.",
-        "Could explore the cultural relativity of such maxims and how CI might (or might not) account for it."
+        "Exposes a potential vulnerability in the CI's application if not carefully constrained.",
+        "Highlights the importance of proper maxim formulation in ethical systems."
       ],
-      "fallacies": [],
-      "strength_score": 0.9,
-      "strength_reasoning": "This evidence effectively demonstrates the CI's inability to provide definitive guidance on a common, albeit morally ambiguous, issue, highlighting its limitations as a comprehensive moral framework."
+      "strength_reasoning": "The claim is strongly supported by the 'Lebron James' example, which clearly illustrates how hyper-specific maxims can be universalized to justify immoral actions."
     },
     {
       "id": "n11",
-      "type": "axiom",
-      "label": "Moral theories should align with intuitive moral beliefs",
-      "detail": "Assumed premise: The author frequently uses phrases like 'intuitively not immoral' and 'counterintuitive conclusions' to evaluate the Categorical Imperative, implying that alignment with common moral intuition is a necessary criterion for a valid moral theory.",
-      "strength": 0.6,
+      "type": "evidence",
+      "label": "Example: specific police maxim",
+      "detail": "“Only certified police officers have the authority to capture and detain those who act disobedient with the law”. This maxim may pass the universality test.",
+      "strength": "strong",
       "counterarguments": [
-        "Many moral theories (e.g., some forms of utilitarianism or nihilism) intentionally challenge common intuitions to reveal deeper moral truths.",
-        "Intuitive moral beliefs can be culturally relative, inconsistent, or based on bias rather than sound reasoning.",
-        "The purpose of a robust moral theory might be to *correct* flawed intuitions, not merely reflect them."
+        "A Kantian might argue this is a properly formulated maxim that addresses the prior universality problem, not a flaw.",
+        "The problem arises when this logic is then abused, not from the maxim itself."
       ],
       "unacknowledged_strengths": [
-        "Could explicitly argue for the epistemic value of intuitive moral judgments.",
-        "Could cite philosophers who advocate for or against intuitionism in moral philosophy."
+        "Demonstrates how attempting to solve one problem (universality for roles) can expose another (specificity)."
       ],
-      "fallacies": [],
-      "strength_score": 0.6,
-      "strength_reasoning": "This is an unstated but foundational premise of the critique, whose validity is debatable, as intuitive morality is not universally accepted as the ultimate arbiter of ethical truth."
+      "strength_reasoning": "The example successfully shows how adding specificity to a maxim allows it to pass the universality test, thereby setting up the deeper specificity problem."
     },
     {
       "id": "n12",
-      "type": "axiom",
-      "label": "Moral theory must provide definitive guidance",
-      "detail": "Assumed premise: The author criticizes the CI for 'leaving us completely stranded in certain moral dilemmas' and for being 'unhelpful in guiding our moral code of conduct,' implying that a fundamental requirement of a moral theory is to offer clear, unambiguous answers to all moral questions.",
-      "strength": 0.7,
+      "type": "evidence",
+      "label": "Example: Lebron James maxim",
+      "detail": "“Only certified police officers have the authority to capture and detain those who act disobedient with the law, or innocent people named Lebron James”. This maxim generates no issues once universalized.",
+      "strength": "strong",
       "counterarguments": [
-        "Some philosophers argue that moral theories should provide frameworks for reasoning rather than absolute answers, acknowledging inherent moral ambiguity.",
-        "Even robust moral theories may face dilemmas where multiple actions are permissible or no perfect solution exists.",
-        "The expectation for 'definitive guidance' might be an unrealistic standard for any complex ethical system."
+        "Kant's other formulations of the CI (e.g., treating humanity as an end) would explicitly condemn such a maxim.",
+        "The example's absurdity is a feature, not a bug, for showing the flaw."
       ],
       "unacknowledged_strengths": [
-        "Could explicitly define the criteria for what constitutes 'definitive guidance' in moral philosophy.",
-        "Could compare this expectation to the aims and outcomes of other established moral theories."
+        "Provides a compelling, albeit absurd, illustration of how extreme specificity can justify arbitrary harm.",
+        "Effectively highlights the ethical loophole identified."
       ],
-      "fallacies": [],
-      "strength_score": 0.7,
-      "strength_reasoning": "This premise is implicit in the author's critique regarding conflicting maxims and lack of guidance, and while it's a common expectation for a moral theory, it is not universally agreed upon as its sole purpose."
+      "strength_reasoning": "The example vividly demonstrates how an arbitrarily specific and ethically problematic maxim can still pass the universalization test, strongly supporting the claim about unlimited specificity."
     },
     {
       "id": "n13",
       "type": "subclaim",
-      "label": "CI has some intuitive validity",
-      "detail": "So, it is evident that the categorical imperative has at least some intuitive validity to it.",
-      "strength": 0.7,
+      "label": "Conflict problem: CI validates opposing maxims",
+      "detail": "The categorical imperative... can validate two maxims that directly oppose each other.",
+      "strength": "strong",
       "counterarguments": [
-        "One could argue that its 'intuitive validity' is superficial or stems from a misunderstanding of its rigorous philosophical underpinnings.",
-        "The analogy to 'Treat others how you would like to be treated' might be a simplification that overlooks key differences.",
-        "Not all individuals might share the same 'intuitive' positive reaction to the CI."
+        "Kantian philosophy has mechanisms beyond the first formulation to resolve such conflicts (e.g., perfect vs. imperfect duties).",
+        "Proper maxim formulation might prevent such direct contradictions or reveal one maxim as not a duty."
       ],
       "unacknowledged_strengths": [
-        "Could provide specific examples of where the CI aligns perfectly with widely accepted moral principles (e.g., prohibition of murder, theft).",
-        "Could elaborate on the psychological or social reasons why the CI resonates intuitively with many people."
+        "Points out a significant practical limitation if the CI cannot provide unambiguous guidance.",
+        "Challenges the CI's completeness as a moral compass."
       ],
-      "fallacies": [],
-      "strength_score": 0.7,
-      "strength_reasoning": "This claim is presented as a generally accepted observation, supported by a common analogy, making its assertion of intuitive validity plausible, though not deeply argued."
+      "strength_reasoning": "This claim is strongly supported by two distinct examples (conflicting Lebron James maxims and 'eat dogs' maxims) where the CI appears to validate contradictory rules."
     },
     {
       "id": "n14",
       "type": "evidence",
-      "label": "CI similar to 'Treat others how you would like to be treated'",
-      "detail": "This is very similar to a message that most people learn and internalize as children: 'Treat others how you would like to be treated'.",
-      "strength": 0.8,
+      "label": "Example: conflicting Lebron James maxims",
+      "detail": "Maxim A: “Police officers can unlawfully detain people named Lebron James for no reason”, and Maxim B: “Police officers cannot unlawfully detain people named Lebron James for no reason”. We find that we can universalize both without any issues.",
+      "strength": "strong",
       "counterarguments": [
-        "The golden rule ('Treat others...') is distinct from Kant's categorical imperative, which is focused on rational universalizability, not reciprocal wishes.",
-        "The golden rule can lead to problems if one's 'liking' is immoral or unusual (e.g., a masochist wanting to be hurt).",
-        "The similarity might be superficial, as Kant's reasoning is far more complex than simple reciprocity."
+        "A Kantian would argue that Maxim A fails the Humanity Formula of the CI, regardless of universalization.",
+        "The framing of 'unlawfully detain' inherently implies immorality, which is problematic for the example."
       ],
       "unacknowledged_strengths": [
-        "Could quote Kant discussing the relationship between his imperative and common moral maxims or proverbs.",
-        "Could explore cross-cultural similarities in the 'golden rule' to strengthen the idea of universal intuitive appeal."
+        "Clearly illustrates how the universalization test alone may fail to adjudicate between directly opposing maxims.",
+        "Builds on previous examples, showing cumulative problems."
       ],
-      "fallacies": [],
-      "strength_score": 0.8,
-      "strength_reasoning": "This analogy is a common way to explain the intuitive appeal of universality, making it effective evidence for the claim of intuitive validity despite potential philosophical differences."
+      "strength_reasoning": "The example effectively demonstrates how two diametrically opposed maxims can both technically pass the universalization test, highlighting the CI's inability to resolve such conflicts."
+    },
+    {
+      "id": "n15",
+      "type": "evidence",
+      "label": "Example: conflicting 'eat dogs' maxims",
+      "detail": "Consider the following maxims “One may eat dogs” and “One shall not eat dogs”. Once again, we can universalize directly opposing maxims without experiencing contradiction or impossibility in each independent case.",
+      "strength": "strong",
+      "counterarguments": [
+        "Kantian ethics might address animal rights (or lack thereof) through other principles, not solely the first formulation.",
+        "Such maxims often fall under imperfect duties, which are more discretionary."
+      ],
+      "unacknowledged_strengths": [
+        "Extends the conflict problem to a more general, less specific moral dilemma.",
+        "Reinforces the argument that the CI offers insufficient guidance in many cases."
+      ],
+      "strength_reasoning": "This example further strengthens the conflict problem by demonstrating it with a general, everyday moral dilemma, reinforcing the idea that the CI offers no decisive guidance."
     }
   ],
   "edges": [
     {
       "id": "e1",
-      "source": "n2",
-      "target": "n1",
-      "relation": "supports"
+      "source": "n1",
+      "target": "n2",
+      "relation": "contradicts"
     },
     {
       "id": "e2",
-      "source": "n4",
-      "target": "n1",
-      "relation": "supports"
-    },
-    {
-      "id": "e3",
-      "source": "n6",
-      "target": "n1",
-      "relation": "supports"
-    },
-    {
-      "id": "e4",
-      "source": "n8",
-      "target": "n1",
-      "relation": "supports"
-    },
-    {
-      "id": "e5",
       "source": "n3",
       "target": "n2",
       "relation": "supports"
     },
     {
-      "id": "e6",
-      "source": "n11",
-      "target": "n2",
-      "relation": "assumes"
-    },
-    {
-      "id": "e7",
-      "source": "n5",
-      "target": "n4",
+      "id": "e3",
+      "source": "n4",
+      "target": "n3",
       "relation": "supports"
     },
     {
-      "id": "e8",
-      "source": "n11",
-      "target": "n4",
-      "relation": "assumes"
+      "id": "e4",
+      "source": "n5",
+      "target": "n3",
+      "relation": "supports"
     },
     {
-      "id": "e9",
+      "id": "e5",
+      "source": "n6",
+      "target": "n3",
+      "relation": "supports"
+    },
+    {
+      "id": "e6",
       "source": "n7",
       "target": "n6",
       "relation": "supports"
     },
     {
+      "id": "e7",
+      "source": "n8",
+      "target": "n6",
+      "relation": "supports"
+    },
+    {
+      "id": "e8",
+      "source": "n9",
+      "target": "n6",
+      "relation": "supports"
+    },
+    {
+      "id": "e9",
+      "source": "n10",
+      "target": "n2",
+      "relation": "supports"
+    },
+    {
       "id": "e10",
       "source": "n11",
-      "target": "n6",
-      "relation": "assumes"
+      "target": "n10",
+      "relation": "supports"
     },
     {
       "id": "e11",
-      "source": "n9",
-      "target": "n8",
+      "source": "n12",
+      "target": "n10",
       "relation": "supports"
     },
     {
       "id": "e12",
-      "source": "n10",
-      "target": "n8",
+      "source": "n13",
+      "target": "n2",
       "relation": "supports"
     },
     {
       "id": "e13",
-      "source": "n12",
-      "target": "n8",
-      "relation": "assumes"
-    },
-    {
-      "id": "e14",
       "source": "n14",
       "target": "n13",
       "relation": "supports"
     },
     {
-      "id": "e15",
-      "source": "n1",
+      "id": "e14",
+      "source": "n15",
       "target": "n13",
-      "relation": "rebuttal"
+      "relation": "supports"
     }
   ]
 }

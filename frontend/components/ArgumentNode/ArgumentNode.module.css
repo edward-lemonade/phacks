@@ -1,0 +1,31 @@
+.root {
+	border-radius: var(--radius);
+	padding: 12px 14px;
+	width: 180px;
+	cursor: pointer;
+	transition: box-shadow 0.15s ease, opacity 0.15s ease;
+	background: var(--arg-node-bg);
+	border: 2px solid var(--arg-node-border);
+	opacity: var(--arg-node-opacity, 1);
+	box-shadow: var(--arg-node-shadow, none);
+}
+
+.typeLabel {
+	font-size: 9px;
+	font-family: var(--font-mono);
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+	color: var(--arg-node-label);
+	margin-bottom: 6px;
+}
+
+.labelText {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--text);
+	line-height: 1.35;
+}
+
+.handleHidden {
+	opacity: 0;
+}

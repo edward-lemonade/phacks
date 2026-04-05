@@ -1,4 +1,5 @@
 import type { ArgumentNodeData, GraphNode } from "@/lib/types";
+import { normalizeStrengthLabel } from "@/lib/strengthLabel";
 
 export function graphNodeToArgumentData(
 	n: GraphNode,
@@ -9,11 +10,9 @@ export function graphNodeToArgumentData(
 		type: n.type,
 		label: n.label,
 		detail: n.detail,
-		strength: n.strength,
+		strength: normalizeStrengthLabel(n.strength),
 		counterarguments: n.counterarguments ?? [],
 		unacknowledged_strengths: n.unacknowledged_strengths ?? [],
-		fallacies: n.fallacies ?? [],
-		strength_score: n.strength_score ?? n.strength,
 		strength_reasoning: n.strength_reasoning ?? "",
 		onNodeClick,
 	};

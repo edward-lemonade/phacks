@@ -141,7 +141,7 @@ async def expand_fact(req: ExpandFactRequest):
 @app.post("/api/analyze-node", response_model=NodeAnalysisResponse)
 async def analyze_node(req: NodeAnalysisRequest):
     prompt = NODE_ANALYSIS_PROMPT.format(
-        type=req.type,
+        node_type=req.type,
         label=req.label,
         detail=req.detail,
         context=req.context,

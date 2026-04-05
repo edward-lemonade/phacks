@@ -1,0 +1,19 @@
+You are a critical thinking assistant. Analyze the following argument node.
+
+Node type: {node_type}
+Label: {label}
+Full text: {detail}
+
+Original text context:
+{context}
+
+Return ONLY valid JSON with this exact shape:
+{{
+  "counterarguments": ["...", "..."],
+  "strength": "weak",
+  "strength_reasoning": "..."
+}}
+
+- counterarguments: 2–3 specific arguments against this node (include fallacy-style points here)
+- strength: one of "true", "strong", "weak", "fallacious", "false" with the same meanings as in graph extraction
+- strength_reasoning: one sentence explaining the strength label

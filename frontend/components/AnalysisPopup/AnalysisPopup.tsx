@@ -3,7 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { apiUrl } from "@/lib/api";
+import {
+	STRENGTH_DISPLAY,
+	normalizeStrengthLabel,
+	type StrengthLabel,
+} from "@/lib/strengthLabel";
 import type { ArgumentNodeData, GraphData } from "@/lib/types";
+import styles from "./AnalysisPopup.module.css";
 
 type FactKind = "counterargument" | "unacknowledged_strength";
 
@@ -75,46 +81,50 @@ export default function AnalysisPopup({
 		[addedKeys, context, node, onMergeGraph]
 	);
 
-	const score = node.strength_score;
+	const strength: StrengthLabel = normalizeStrengthLabel(node.strength);
+	const strengthMeta = STRENGTH_DISPLAY[strength];
 	const reasoning = node.strength_reasoning;
 
 	if (!mounted) return null;
 
 	return createPortal(
-		<div className="popup-backdrop" onClick={onClose} role="presentation">
+		<div
+			className={styles.backdrop}
+			onClick={onClose}
+			role="presentation"
+		>
 			<div
-				className="popup-panel"
+				className={styles.panel}
 				onClick={(e) => e.stopPropagation()}
 				role="dialog"
 				aria-labelledby="popup-title"
 			>
-				<div className="popup-kicker">{node.type}</div>
-				<h3 id="popup-title" className="popup-title">
+				<div className={styles.kicker}>{node.type}</div>
+				<h3 id="popup-title" className={styles.title}>
 					{node.label}
 				</h3>
-				<p className="popup-detail">{node.detail}</p>
+				<p className={styles.detail}>{node.detail}</p>
 
-				{err && <p className="popup-error">{err}</p>}
+				{err ? <p className={styles.error}>{err}</p> : null}
 
-				<div className="popup-strength popup-strength--top">
-					<div className="popup-label">
-						Analysis strength — {Math.round(score * 100)}%
-					</div>
-					<div className="popup-bar">
-						<div
-							className="popup-bar-fill"
-							style={{ width: `${score * 100}%` }}
-						/>
+				<div className={`${styles.strength} ${styles.strengthTop}`}>
+					<div className={styles.label}>Strength</div>
+					<div
+						className={styles.strengthBadge}
+						data-strength={strength}
+						title={strengthMeta.hint}
+					>
+						{strengthMeta.title}
 					</div>
 					{reasoning ? (
-						<p className="popup-reason">{reasoning}</p>
+						<p className={styles.reason}>{reasoning}</p>
 					) : null}
 				</div>
 
-				{node.counterarguments.length > 0 && (
-					<div className="popup-section">
-						<div className="popup-label">Counterarguments</div>
-						<p className="popup-hint">
+				{node.counterarguments.length > 0 ? (
+					<div className={styles.section}>
+						<div className={styles.label}>Counterarguments</div>
+						<p className={styles.hint}>
 							Possible objections — add to the graph to explore
 							them.
 						</p>
@@ -123,13 +133,15 @@ export default function AnalysisPopup({
 							const busy = addingKey === k;
 							const done = addedKeys.has(k);
 							return (
-								<div key={k} className="popup-fact-row">
-									<p className="popup-block popup-block--counter">
+								<div key={k} className={styles.factRow}>
+									<p
+										className={`${styles.block} ${styles.blockCounter}`}
+									>
 										{c}
 									</p>
 									<button
 										type="button"
-										className="popup-fact-add"
+										className={styles.factAdd}
 										disabled={busy || done}
 										onClick={() =>
 											handleAdd("counterargument", c, i)
@@ -145,14 +157,14 @@ export default function AnalysisPopup({
 							);
 						})}
 					</div>
-				)}
+				) : null}
 
-				{node.unacknowledged_strengths.length > 0 && (
-					<div className="popup-section">
-						<div className="popup-label">
+				{node.unacknowledged_strengths.length > 0 ? (
+					<div className={styles.section}>
+						<div className={styles.label}>
 							Unacknowledged strengths
 						</div>
-						<p className="popup-hint">
+						<p className={styles.hint}>
 							Ways the claim could be stronger — add to grow the
 							map.
 						</p>
@@ -161,13 +173,15 @@ export default function AnalysisPopup({
 							const busy = addingKey === k;
 							const done = addedKeys.has(k);
 							return (
-								<div key={k} className="popup-fact-row">
-									<p className="popup-block popup-block--strength">
+								<div key={k} className={styles.factRow}>
+									<p
+										className={`${styles.block} ${styles.blockStrength}`}
+									>
 										{s}
 									</p>
 									<button
 										type="button"
-										className="popup-fact-add"
+										className={styles.factAdd}
 										disabled={busy || done}
 										onClick={() =>
 											handleAdd(
@@ -187,23 +201,9 @@ export default function AnalysisPopup({
 							);
 						})}
 					</div>
-				)}
+				) : null}
 
-				{node.fallacies.length > 0 && (
-					<div className="popup-section">
-						<div className="popup-label">Fallacies</div>
-						{node.fallacies.map((f, i) => (
-							<p
-								key={`fallacy-${i}`}
-								className="popup-block popup-block--fallacy"
-							>
-								{f}
-							</p>
-						))}
-					</div>
-				)}
-
-				<button type="button" className="popup-close" onClick={onClose}>
+				<button type="button" className={styles.close} onClick={onClose}>
 					Close
 				</button>
 			</div>

@@ -1,0 +1,30 @@
+You expand one analytical point (a counterargument or an unacknowledged strength) into a small argument subgraph
+that will be merged into an existing map. The user clicked "Add" on this point to grow the graph.
+
+Parent node id (must appear as target in edges from new nodes): {parent_node_id}
+Parent node type: {parent_type}
+Parent label: {parent_label}
+Parent detail: {parent_detail}
+
+Kind of fact: {fact_kind}
+Fact text to expand: {fact_text}
+
+Original passage for context:
+{original_text}
+
+Return ONLY valid JSON. No markdown, no code fences.
+
+Create 1–3 NEW nodes only (use new ids like "x1", "x2", not existing ids).
+Node types allowed: thesis, subclaim, evidence, axiom, counterclaim only.
+Each new node must include: id, type, label, detail, strength (one of true|strong|weak|fallacious|false),
+counterarguments (array), unacknowledged_strengths (array), strength_reasoning (string).
+
+Edges: point FROM each new child TO the parent node id above (child → parent). Use relation "contradicts" or "qualifies" for counterargument-style facts; "supports" for unacknowledged strength when the new material supports the parent.
+
+Shape:
+{{
+  "nodes": [...],
+  "edges": [
+    {{"id": "xe1", "source": "x1", "target": "{parent_node_id}", "relation": "contradicts"}}
+  ]
+}}

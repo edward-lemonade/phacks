@@ -1,13 +1,12 @@
 import type { Node } from "@xyflow/react";
+import type { StrengthLabel } from "@/lib/strengthLabel";
 
 export type NodeType =
 	| "thesis"
 	| "subclaim"
 	| "evidence"
-	| "warrant"
-	| "rebuttal"
 	| "axiom"
-	| "fallacy";
+	| "counterclaim";
 
 export type EdgeRelation =
 	| "supports"
@@ -22,11 +21,9 @@ export interface GraphNode {
 	type: NodeType | string;
 	label: string;
 	detail: string;
-	strength: number;
+	strength: StrengthLabel | string;
 	counterarguments?: string[];
 	unacknowledged_strengths?: string[];
-	fallacies?: string[];
-	strength_score?: number;
 	strength_reasoning?: string;
 }
 
@@ -47,11 +44,9 @@ export interface ArgumentNodeData extends Record<string, unknown> {
 	type: string;
 	label: string;
 	detail: string;
-	strength: number;
+	strength: StrengthLabel;
 	counterarguments: string[];
 	unacknowledged_strengths: string[];
-	fallacies: string[];
-	strength_score: number;
 	strength_reasoning: string;
 	onNodeClick: (data: ArgumentNodeData) => void;
 }
@@ -65,7 +60,6 @@ export interface EdgeData extends Record<string, unknown> {
 
 export interface NodeAnalysisResult {
 	counterarguments: string[];
-	fallacies: string[];
-	strength_score: number;
+	strength: StrengthLabel;
 	strength_reasoning: string;
 }

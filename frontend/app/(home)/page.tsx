@@ -2,14 +2,17 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useId, useState } from "react";
+import PageLayout from "@/components/PageLayout";
+import Sidebar from "@/components/Sidebar";
 import TextInput from "@/components/TextInput";
 import { apiUrl } from "@/lib/api";
 import type { GraphData } from "@/lib/types";
+import pageStyles from "./page.module.css";
 
 const GraphCanvas = dynamic(() => import("@/components/GraphCanvas"), {
 	ssr: false,
 	loading: () => (
-		<div className="canvas-loading">
+		<div className={pageStyles.canvasLoading}>
 			<span>Loading graph…</span>
 		</div>
 	),
@@ -66,54 +69,28 @@ export default function HomePage() {
 	}, []);
 
 	return (
-		<div className="app-shell">
-			<aside
-				id={sidebarId}
-				className={`sidebar${sidebarOpen ? "" : " sidebar--collapsed"}`}
-				aria-label="Input panel"
-			>
-				<button
-					type="button"
-					className="sidebar-toggle"
-					onClick={toggleSidebar}
-					aria-expanded={sidebarOpen}
-					aria-controls={sidebarId}
-					title={sidebarOpen ? "Collapse panel" : "Expand panel"}
+		<PageLayout
+			sidebar={
+				<Sidebar
+					id={sidebarId}
+					open={sidebarOpen}
+					onToggle={toggleSidebar}
+					brand={BRAND}
+					tagline="Paste text → explore claims & counterarguments"
+					error={error}
 				>
-					<span className="sidebar-toggle-icon" aria-hidden>
-						{sidebarOpen ? "‹" : "›"}
-					</span>
-				</button>
-
-				<div className="sidebar-inner">
-					<h1 className="sidebar-brand" aria-label={BRAND}>
-						{BRAND.split("").map((ch, i) => (
-							<span key={i} className="sidebar-brand-char">
-								{ch}
-							</span>
-						))}
-					</h1>
-
-					<div className="sidebar-expanded-block">
-						<p className="sidebar-tagline">
-							Paste text → explore claims & counterarguments
-						</p>
-						<TextInput onSubmit={handleSubmit} loading={loading} />
-						{error && <p className="sidebar-error">{error}</p>}
-					</div>
-				</div>
-			</aside>
-
-			<main className="canvas-full" aria-label="Argument map canvas">
-				{graphData ? (
-					<GraphCanvas
-						graphData={graphData}
-						originalText={originalText}
-					/>
-				) : (
-					<div className="canvas-empty" />
-				)}
-			</main>
-		</div>
+					<TextInput onSubmit={handleSubmit} loading={loading} />
+				</Sidebar>
+			}
+		>
+			{graphData ? (
+				<GraphCanvas
+					graphData={graphData}
+					originalText={originalText}
+				/>
+			) : (
+				<div className={pageStyles.canvasEmpty} />
+			)}
+		</PageLayout>
 	);
 }

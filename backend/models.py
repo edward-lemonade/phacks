@@ -1,26 +1,65 @@
-from pydantic import BaseModel, Field
-from typing import List
+from typing import Any, List
+
+from pydantic import BaseModel, Field, field_validator, model_validator
+
+STRENGTH_LABELS = frozenset({"true", "strong", "weak", "fallacious", "false"})
+
+
+def _coerce_strength(v: Any) -> str:
+    if v is None:
+        return "weak"
+    if isinstance(v, (int, float)):
+        x = float(v)
+        if x >= 0.9:
+            return "true"
+        if x >= 0.75:
+            return "strong"
+        if x >= 0.45:
+            return "weak"
+        if x >= 0.2:
+            return "fallacious"
+        return "false"
+    s = str(v).lower().strip()
+    if s in STRENGTH_LABELS:
+        return s
+    return "weak"
 
 
 class Node(BaseModel):
+    """Graph + embedded analysis. Node types: thesis | subclaim | evidence | axiom | counterclaim."""
+
+    @model_validator(mode="before")
+    @classmethod
+    def _strip_legacy_node_fields(cls, data: Any):
+        if isinstance(data, dict):
+            data = dict(data)
+            data.pop("fallacies", None)
+            if "strength_score" in data and "strength" not in data:
+                data["strength"] = data.pop("strength_score")
+            else:
+                data.pop("strength_score", None)
+        return data
+
     id: str
-    type: str  # thesis | subclaim | evidence | warrant | rebuttal | axiom | fallacy
+    type: str
     label: str
     detail: str
-    strength: float
-    # Populated by the same /analyze call (not separate graph nodes)
+    strength: str = "weak"
     counterarguments: List[str] = Field(default_factory=list)
     unacknowledged_strengths: List[str] = Field(default_factory=list)
-    fallacies: List[str] = Field(default_factory=list)
-    strength_score: float = 0.0
     strength_reasoning: str = ""
+
+    @field_validator("strength", mode="before")
+    @classmethod
+    def _normalize_strength(cls, v):
+        return _coerce_strength(v)
 
 
 class Edge(BaseModel):
     id: str
     source: str
     target: str
-    relation: str  # supports | contradicts | qualifies | assumes | contains_fallacy
+    relation: str  # supports | contradicts | qualifies | assumes
 
 
 class GraphResponse(BaseModel):
@@ -41,10 +80,26 @@ class NodeAnalysisRequest(BaseModel):
 
 
 class NodeAnalysisResponse(BaseModel):
-    counterarguments: List[str]
-    fallacies: List[str]
-    strength_score: float
-    strength_reasoning: str
+    @model_validator(mode="before")
+    @classmethod
+    def _strip_legacy_analysis(cls, data: Any):
+        if isinstance(data, dict):
+            data = dict(data)
+            data.pop("fallacies", None)
+            if "strength_score" in data and "strength" not in data:
+                data["strength"] = data.pop("strength_score")
+            else:
+                data.pop("strength_score", None)
+        return data
+
+    counterarguments: List[str] = Field(default_factory=list)
+    strength: str = "weak"
+    strength_reasoning: str = ""
+
+    @field_validator("strength", mode="before")
+    @classmethod
+    def _normalize_strength_analysis(cls, v):
+        return _coerce_strength(v)
 
 
 class ExpandFactRequest(BaseModel):

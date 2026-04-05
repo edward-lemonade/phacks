@@ -1,0 +1,20 @@
+.canvasEmpty {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: radial-gradient(
+		ellipse 80% 60% at 50% 40%,
+		#101014 0%,
+		var(--bg) 70%
+	);
+}
+
+.canvasLoading {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #3f3f46;
+	font-size: 13px;
+}

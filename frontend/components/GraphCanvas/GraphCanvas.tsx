@@ -25,8 +25,8 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-import ArgumentNode from "@/components/ArgumentNode";
 import AnalysisPopup from "@/components/AnalysisPopup";
+import ArgumentNode from "@/components/ArgumentNode";
 import { useHierarchicalLayout } from "@/hooks/useHierarchicalLayout";
 import { graphNodeToArgumentData } from "@/lib/graphNodeData";
 import { mergeFragmentNearParent } from "@/lib/mergeGraphFragment";
@@ -36,6 +36,7 @@ import type {
 	EdgeData,
 	GraphData,
 } from "@/lib/types";
+import styles from "./GraphCanvas.module.css";
 
 const nodeTypes = { argument: ArgumentNode };
 
@@ -184,12 +185,10 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 					type: "subclaim",
 					label: "New node",
 					detail: "",
-					strength: 0.5,
+					strength: "weak",
 					id,
 					counterarguments: [],
 					unacknowledged_strengths: [],
-					fallacies: [],
-					strength_score: 0.5,
 					strength_reasoning: "",
 					onNodeClick: handleNodeClick,
 				},
@@ -213,7 +212,7 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 				fitView
 				minZoom={0.2}
 				maxZoom={1.5}
-				className="argument-flow"
+				className={styles.flow}
 				style={{ width: "100%", height: "100%" }}
 			>
 				<FlowEffects
@@ -223,7 +222,7 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 				/>
 				<Background color="var(--grid)" gap={28} size={1} />
 				<Controls showInteractive={false} />
-				{selectedNode && (
+				{selectedNode ? (
 					<AnalysisPopupLayer
 						selectedNode={selectedNode}
 						originalText={originalText}
@@ -232,7 +231,7 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 						setNodes={setNodes}
 						setEdges={setEdges}
 					/>
-				)}
+				) : null}
 			</ReactFlow>
 		</>
 	);
@@ -262,7 +261,7 @@ export default function GraphCanvas({ graphData, originalText }: Props) {
 
 	return (
 		<ReactFlowProvider>
-			<div className="canvas-flow-root">
+			<div className={styles.flowRoot}>
 				<FlowInner
 					initialNodes={initialNodes}
 					initialEdges={initialEdges}
