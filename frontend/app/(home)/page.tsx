@@ -27,6 +27,7 @@ export default function HomePage() {
 	const [originalText, setOriginalText] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+    const [submitCount, setSubmitCount] = useState(0);
 
 	const handleSubmit = async (text: string) => {
 		setLoading(true);
@@ -53,6 +54,7 @@ export default function HomePage() {
 			}
 			const data = (await res.json()) as GraphData;
 			setGraphData(data);
+            setSubmitCount((c) => c + 1);
 		} catch (e) {
 			setError(
 				e instanceof Error
@@ -85,6 +87,7 @@ export default function HomePage() {
 		>
 			{graphData ? (
 				<GraphCanvas
+                    key={submitCount}
 					graphData={graphData}
 					originalText={originalText}
 				/>
