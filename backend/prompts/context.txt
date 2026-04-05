@@ -45,6 +45,7 @@ relation: <supports | contradicts>
 - No JSON, no markdown, no code fences. Plain text only.
 - Axioms must always be self-contained, eternal truths with no ambiguation, and should always be sources with no inward edges. Use sparingly.
 - ALL created nodes must point toward a parent, EXCEPT for the thesis.
+- IMPORTANT: Only Axiom nodes can have "True" strength, and all "True" strength nodes must be axioms.
 
 ### Reporter nodes are FORBIDDEN
 

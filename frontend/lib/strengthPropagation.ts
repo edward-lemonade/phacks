@@ -235,29 +235,5 @@ export function propagateArgumentStrengths(
 		return { ...n, data: { ...n.data, strength: next } };
 	});
 
-	// ── Sanity-check logging ──────────────────────────────────────────────────
-	const before = nodes.map((n) => ({ id: n.id, label: n.data.label, strength: n.data.strength }));
-	const after  = out.map((n)  => ({ id: n.id, label: n.data.label, strength: n.data.strength }));
-	const diffs  = before.filter((b, i) => b.strength !== after[i].strength);
-
-	console.group(
-		`[propagate] nodes=${nodes.length} edges=${edges.length} changed=${changed} diffs=${diffs.length}`
-	);
-	console.log("edges", edges.map((e) => ({ src: e.source, tgt: e.target, rel: e.data?.relation })));
-	if (diffs.length > 0) {
-		diffs.forEach((b, _) => {
-			const a = after.find((x) => x.id === b.id)!;
-			console.log(`  ${b.label} (${b.id}): ${b.strength} → ${a.strength}`);
-		});
-	} else {
-		console.log("  no strength changes");
-		console.log("before", before);
-		console.log("resolved", Object.fromEntries(
-			[...resolved.entries()].map(([id, s]) => [id, toLabel(s)])
-		));
-	}
-	console.groupEnd();
-	// ─────────────────────────────────────────────────────────────────────────
-
 	return changed ? out : nodes;
 }

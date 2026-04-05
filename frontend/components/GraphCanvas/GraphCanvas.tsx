@@ -97,13 +97,6 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 		(p: { x: number; y: number }) => { x: number; y: number }
 	>((p) => p);
 
-	// Always-current refs so every propagation call — whether inside a
-	// setNodes updater, an effect, or an event handler — sees the same
-	// consistent snapshot of both nodes and edges.
-	const edgesRef = useRef(edges);
-	useLayoutEffect(() => {
-		edgesRef.current = edges;
-	});
 
 	const handleNodeClick = useCallback((nodeData: ArgumentNodeData) => {
 		setSelectedNode(nodeData);
@@ -234,7 +227,7 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 					}
 					return { ...n, data };
 				});
-				return propagateArgumentStrengths(updated, edgesRef.current);
+				return propagateArgumentStrengths(updated, edges);
 			});
 
 			setSelectedNode((prev) => {
@@ -276,7 +269,7 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 
 			// Propagate using the ref so the updater always sees the current
 			// edges, not whatever was closed over when this callback was created.
-			setNodes((nds) => propagateArgumentStrengths(nds, edgesRef.current));
+			setNodes((nds) => propagateArgumentStrengths(nds, edges));
 		},
 		[onNodesChange, setNodes]
 	);
@@ -291,17 +284,13 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 		[edges, nodes]
 	);
 
-	// Re-propagate whenever the graph structure or node data changes.
-	// `edges` is intentionally excluded from the dep array — we read it via
-	// edgesRef.current inside the setNodes updater so that the node list
-	// (curr, always fresh from React's queue) and the edge list are always
-	// the same committed snapshot. Including `edges` directly would cause
-	// the effect to close over a render-cycle-old value of edges whenever
-	// both nodes and edges change in the same flush.
 	useLayoutEffect(() => {
-		setNodes((curr) => propagateArgumentStrengths(curr, edgesRef.current));
+		setNodes((curr) => propagateArgumentStrengths(curr, edges));
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [graphStructureKey, nodeDataVersion]);
+	}, [graphStructureKey, nodeDataVersion, edges]);
+    useEffect(() => {
+        setNodes((curr) => propagateArgumentStrengths(curr, edges));
+    }, [])
 
 	// Sync the popup's node data when strengths change.
 	useEffect(() => {
