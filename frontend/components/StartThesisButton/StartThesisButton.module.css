@@ -1,0 +1,124 @@
+.wrap {
+	position: fixed;
+	top: 16px;
+	right: 16px;
+	z-index: 50;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+}
+
+.triggerBtn {
+	background: #18181f;
+	border: 1px solid #6b7fd7;
+	border-radius: 8px;
+	color: #a5b4fc;
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 600;
+	padding: 8px 16px;
+	cursor: pointer;
+	letter-spacing: 0.01em;
+	transition: background 0.15s, border-color 0.15s;
+}
+
+.triggerBtn:hover {
+	background: #1e1e2e;
+	border-color: #818cf8;
+}
+
+.panel {
+	background: #111118;
+	border: 1px solid #2d2d3a;
+	border-radius: 12px;
+	padding: 16px;
+	width: 300px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.kicker {
+	color: #a5b4fc;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.cancelBtn {
+	background: none;
+	border: none;
+	color: #6b7280;
+	cursor: pointer;
+	font-size: 14px;
+	padding: 2px 4px;
+	line-height: 1;
+	transition: color 0.15s;
+}
+
+.cancelBtn:hover {
+	color: #9ca3af;
+}
+
+.textarea {
+	background: #0c0c14;
+	border: 1px solid #2d2d3a;
+	border-radius: 8px;
+	color: #e5e7eb;
+	font-family: inherit;
+	font-size: 13px;
+	line-height: 1.5;
+	padding: 8px 10px;
+	resize: vertical;
+	outline: none;
+	width: 100%;
+	box-sizing: border-box;
+	transition: border-color 0.15s;
+}
+
+.textarea:focus {
+	border-color: #4b5563;
+}
+
+.textarea:disabled {
+	opacity: 0.5;
+}
+
+.submitBtn {
+	background: #3730a3;
+	border: 1px solid #6b7fd7;
+	border-radius: 8px;
+	color: #e0e7ff;
+	cursor: pointer;
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 600;
+	padding: 8px 14px;
+	transition: background 0.15s;
+	align-self: flex-end;
+}
+
+.submitBtn:hover:not(:disabled) {
+	background: #4338ca;
+}
+
+.submitBtn:disabled {
+	background: #1e1e2a;
+	border-color: #2d2d3a;
+	color: #4b5563;
+	cursor: not-allowed;
+}
+
+.error {
+	color: #f87171;
+	font-size: 12px;
+	margin: 0;
+}

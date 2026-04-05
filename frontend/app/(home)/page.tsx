@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useId, useState } from "react";
 import PageLayout from "@/components/PageLayout";
 import Sidebar from "@/components/Sidebar";
+import StartThesisButton from "@/components/StartThesisButton";
 import TextInput from "@/components/TextInput";
 import { apiUrl } from "@/lib/api";
 import type { GraphData } from "@/lib/types";
@@ -27,7 +28,9 @@ export default function HomePage() {
 	const [originalText, setOriginalText] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-    const [submitCount, setSubmitCount] = useState(0);
+	const [submitCount, setSubmitCount] = useState(0);
+	const [hasThesis, setHasThesis] = useState(false);
+	const [thesisBusy, setThesisBusy] = useState(false);
 
 	const handleSubmit = async (text: string) => {
 		setLoading(true);
@@ -54,7 +57,8 @@ export default function HomePage() {
 			}
 			const data = (await res.json()) as GraphData;
 			setGraphData(data);
-            setSubmitCount((c) => c + 1);
+			setSubmitCount((c) => c + 1);
+			setHasThesis(data.nodes.some((n) => n.type === "thesis"));
 		} catch (e) {
 			setError(
 				e instanceof Error
@@ -65,6 +69,40 @@ export default function HomePage() {
 			setLoading(false);
 		}
 	};
+
+	const handleStartThesis = useCallback(async (text: string) => {
+		setThesisBusy(true);
+		try {
+			const res = await fetch(apiUrl("/api/analyze"), {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ text }),
+			});
+			if (!res.ok) {
+				const body = (await res.json().catch(() => ({}))) as { detail?: unknown };
+				const d = body.detail;
+				const msg =
+					typeof d === "string"
+						? d
+						: Array.isArray(d)
+							? "Invalid request"
+							: "Backend error";
+				throw new Error(msg);
+			}
+			const data = (await res.json()) as GraphData;
+			setGraphData((prev) => {
+				if (!prev) return data;
+				return {
+					nodes: [...prev.nodes, ...data.nodes],
+					edges: [...prev.edges, ...data.edges],
+				};
+			});
+			setSubmitCount((c) => c + 1);
+			setHasThesis(true);
+		} finally {
+			setThesisBusy(false);
+		}
+	}, []);
 
 	const toggleSidebar = useCallback(() => {
 		setSidebarOpen((o) => !o);
@@ -87,12 +125,15 @@ export default function HomePage() {
 		>
 			{graphData ? (
 				<GraphCanvas
-                    key={submitCount}
+					key={submitCount}
 					graphData={graphData}
 					originalText={originalText}
 				/>
 			) : (
 				<div className={pageStyles.canvasEmpty} />
+			)}
+			{!hasThesis && (
+				<StartThesisButton onSubmit={handleStartThesis} busy={thesisBusy} />
 			)}
 		</PageLayout>
 	);
