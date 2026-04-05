@@ -39,7 +39,7 @@ app.add_middleware(
 
 # -- Config ---------------------------------------
 
-MOCK_ANALYSIS = os.environ.get('MOCK_ANALYSIS', False)
+MOCK_ANALYSIS = os.environ.get('MOCK_ANALYSIS', '').lower() in ('1', 'true', 'yes')
 print("Using mock?", MOCK_ANALYSIS)
 
 # -- Helpers ---------------------------------------
