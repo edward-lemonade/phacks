@@ -43,3 +43,4 @@ relation: <supports | contradicts>
 - further_supports: exactly 0–3 items.
 - Every node and edge must end with ---.
 - No JSON, no markdown, no code fences. Plain text only.
+- Axioms must always be self-contained, eternal truths with no ambiguation. Use sparingly.

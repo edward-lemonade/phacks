@@ -1,49 +1,63 @@
 import json
-import os
-import re
 from typing import Optional
 
-from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import HTTPException
+from google import genai
+import os
 
-from client import run
-from models import (
-    AnalyzeRequest,
-    ExpandFactRequest,
-    GraphResponse,
-    UserFactRequest,
-)
-from parser import parse_enrich_response, parse_graph_response, parse_node_analysis
-from prompts import (
-    COUNTERARGUMENT_EXPAND_REPAIR_PROMPT,
-    ENRICH_EXPAND_NODES_PROMPT,
-    EXPAND_FACT_PROMPT,
-    GRAPH_PROMPT,
-    USER_FACT_PROMPT,
-)
+from models import GraphResponse
+from parser import parse_enrich_response, parse_graph_response
+from prompts import COUNTERARGUMENT_EXPAND_REPAIR_PROMPT, ENRICH_EXPAND_NODES_PROMPT
 
-load_dotenv()
-app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# -- Client --------------------------------------------------------------------
 
-# -- Config ---------------------------------------
+MODEL_NAME = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+_client = None
 
-MOCK_ANALYSIS = True
 
-# -- Helpers ---------------------------------------
+def get_client():
+    global _client
+    if _client is not None:
+        return _client
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        raise HTTPException(
+            status_code=503,
+            detail="GEMINI_API_KEY is not set. Add it to backend/.env",
+        )
+    _client = genai.Client(api_key=api_key)
+    return _client
+
+
+def _response_text(resp) -> str:
+    try:
+        t = getattr(resp, "text", None)
+        if t:
+            return t.strip()
+    except Exception:
+        pass
+    parts = []
+    for c in getattr(resp, "candidates", []) or []:
+        content = getattr(c, "content", None)
+        if content and getattr(content, "parts", None):
+            for p in content.parts:
+                if getattr(p, "text", None):
+                    parts.append(p.text)
+    return "\n".join(parts).strip()
+
+
+def _generate(prompt: str):
+    return get_client().models.generate_content(
+        model=MODEL_NAME,
+        contents=prompt,
+    )
+
+
+# -- Validation ----------------------------------------------------------------
 
 COUNTERARGUMENT_CHILD_TYPES = frozenset({"evidence", "subclaim", "axiom"})
+
+
 def _validate_counterargument_expand(data: dict, parent_id: str) -> Optional[str]:
     nodes = data.get("nodes")
     edges = data.get("edges")
@@ -99,6 +113,9 @@ def _validate_counterargument_expand(data: dict, parent_id: str) -> Optional[str
             return "counterclaim must only link to the parent in this fragment"
 
     return None
+
+
+# -- Enrichment ----------------------------------------------------------------
 
 def _enrich_expand_nodes_if_needed(data: dict, req) -> None:
     nodes = data.get("nodes")
@@ -159,6 +176,7 @@ def _enrich_expand_nodes_if_needed(data: dict, req) -> None:
         if isinstance(sr, str) and sr.strip():
             target["strength_reasoning"] = sr.strip()
 
+
 def _ensure_expand_node_analysis(nodes: list) -> None:
     for n in nodes:
         if not isinstance(n, dict):
@@ -183,6 +201,9 @@ def _ensure_expand_node_analysis(nodes: list) -> None:
                 "The strength label reflects how well this claim is supported in context."
             )
 
+
+# -- Pipeline ------------------------------------------------------------------
+
 def _run_expand_pipeline(data: dict, req, fact_kind: str) -> GraphResponse:
     if fact_kind == "counterargument":
         v_err = _validate_counterargument_expand(data, req.parent_node_id)
@@ -196,7 +217,7 @@ def _run_expand_pipeline(data: dict, req, fact_kind: str) -> GraphResponse:
                 )
                 + json.dumps(data, ensure_ascii=False)
             )
-            raw2 = run(repair_prompt)
+            raw2 = _response_text(_generate(repair_prompt))
             if not raw2:
                 raise ValueError("Empty repair model response")
             data = parse_graph_response(raw2)
@@ -217,89 +238,3 @@ def _run_expand_pipeline(data: dict, req, fact_kind: str) -> GraphResponse:
         _ensure_expand_node_analysis(nodes)
 
     return GraphResponse(**data)
-
-
-# -- Routes --------------------------------------------------------------------
-
-@app.post("/api/analyze", response_model=GraphResponse)
-async def analyze(req: AnalyzeRequest):
-    if not req.text.strip():
-        raise HTTPException(status_code=400, detail="Empty text")
-    try:
-        prompt = GRAPH_PROMPT.format(
-            text=req.text
-        )
-
-        def RUN_MOCK():
-            with open("output.txt", "r") as f:
-                raw = f.read()
-            f.close()
-            
-            return raw
-        def RUN_AI():
-            raw = run(prompt)
-            with open("output.txt", "w") as f:
-                f.write(raw)
-            f.close()
-            return raw
-        
-        if (MOCK_ANALYSIS):
-            raw = RUN_MOCK()
-        else:
-            raw = RUN_AI()
-
-        if not raw:
-            raise ValueError("Empty model response")
-        return GraphResponse(**parse_graph_response(raw))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/api/expand-fact", response_model=GraphResponse)
-async def expand_fact(req: ExpandFactRequest):
-    if not req.fact_text.strip():
-        raise HTTPException(status_code=400, detail="Empty fact text")
-    try:
-        prompt = EXPAND_FACT_PROMPT.format(
-            parent_node_id=req.parent_node_id,
-            parent_type=req.parent_type,
-            parent_label=req.parent_label,
-            parent_detail=req.parent_detail,
-            fact_kind=req.fact_kind,
-            fact_text=req.fact_text,
-            original_text=req.original_text,
-        )
-        raw = run(prompt)
-        if not raw:
-            raise ValueError("Empty model response")
-        data = parse_graph_response(raw)
-        return _run_expand_pipeline(data, req, req.fact_kind.strip().lower())
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/api/user-fact", response_model=GraphResponse)
-async def user_fact(req: UserFactRequest):
-    if not req.fact_text.strip():
-        raise HTTPException(status_code=400, detail="Empty fact text")
-    try:
-        prompt = USER_FACT_PROMPT.format(
-            parent_node_id=req.parent_node_id,
-            parent_type=req.parent_type,
-            parent_label=req.parent_label,
-            parent_detail=req.parent_detail,
-            fact_kind=req.fact_kind,
-            fact_text=req.fact_text,
-            original_text=req.original_text,
-        )
-        raw = run(prompt)
-        if not raw:
-            raise ValueError("Empty model response")
-        data = parse_graph_response(raw)
-        return _run_expand_pipeline(data, req, req.fact_kind.strip().lower())
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
