@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useId, useState } from "react";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import PageLayout from "@/components/PageLayout";
 import Sidebar from "@/components/Sidebar";
 import StartThesisButton from "@/components/StartThesisButton";
@@ -31,6 +32,7 @@ export default function HomePage() {
 	const [submitCount, setSubmitCount] = useState(0);
 	const [hasThesis, setHasThesis] = useState(false);
 	const [thesisBusy, setThesisBusy] = useState(false);
+	const [expandLoading, setExpandLoading] = useState(false);
 
 	const handleSubmit = async (text: string) => {
 		setLoading(true);
@@ -108,6 +110,8 @@ export default function HomePage() {
 		setSidebarOpen((o) => !o);
 	}, []);
 
+	const isLoading = loading || thesisBusy || expandLoading;
+
 	return (
 		<PageLayout
 			sidebar={
@@ -123,11 +127,13 @@ export default function HomePage() {
 				</Sidebar>
 			}
 		>
+			<LoadingSpinner visible={isLoading} />
 			{graphData ? (
 				<GraphCanvas
 					key={submitCount}
 					graphData={graphData}
 					originalText={originalText}
+					onLoadingChange={setExpandLoading}
 				/>
 			) : (
 				<div className={pageStyles.canvasEmpty} />
