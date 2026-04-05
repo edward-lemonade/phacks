@@ -242,8 +242,10 @@ async def analyze(req: AnalyzeRequest):
             return raw
         
         if (MOCK_ANALYSIS):
+            print("Fetching mock data: ", MOCK_ANALYSIS)
             raw = RUN_MOCK()
         else:
+            print("Fetching AI data: ", MOCK_ANALYSIS)
             raw = RUN_AI()
 
         if not raw:
