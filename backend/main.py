@@ -40,6 +40,7 @@ app.add_middleware(
 # -- Config ---------------------------------------
 
 MOCK_ANALYSIS = os.environ.get('MOCK_ANALYSIS', False)
+print("Using mock?", MOCK_ANALYSIS)
 
 # -- Helpers ---------------------------------------
 
@@ -238,9 +239,6 @@ async def analyze(req: AnalyzeRequest):
             return raw
         def RUN_AI():
             raw = run(prompt)
-            with open("output.txt", "r") as f:
-                f.write(raw)
-            f.close()
             return raw
         
         if (MOCK_ANALYSIS):
