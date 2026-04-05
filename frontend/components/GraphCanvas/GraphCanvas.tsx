@@ -28,7 +28,10 @@ import "@xyflow/react/dist/style.css";
 
 import AnalysisPopup from "@/components/AnalysisPopup";
 import ArgumentNode from "@/components/ArgumentNode";
+import AttackModeButton from "@/components/AttackModeButton";
+import AttackModePanel from "@/components/AttackModePanel";
 import { useHierarchicalLayout } from "@/hooks/useHierarchicalLayout";
+import { useAttackMode } from "@/hooks/useAttackMode";
 import { apiUrl } from "@/lib/api";
 import { factKey, type FactKind } from "@/lib/factKey";
 import {
@@ -77,7 +80,7 @@ type FlowInnerProps = {
 	initialNodes: ArgumentFlowNode[];
 	initialEdges: Edge<EdgeData>[];
 	originalText: string;
-    onLoadingChange: (loading: boolean) => void;
+	onLoadingChange: (loading: boolean) => void;
 };
 
 function FlowInner({ initialNodes, initialEdges, originalText, onLoadingChange }: FlowInnerProps) {
@@ -93,12 +96,12 @@ function FlowInner({ initialNodes, initialEdges, originalText, onLoadingChange }
 	} | null>(null);
 	const [nodeDataVersion, setNodeDataVersion] = useState(0);
 	const expandInFlightRef = useRef(false);
-	const { getNode } = useReactFlow();
+	const { getNode, getNodes, getEdges } = useReactFlow();
 	const screenToFlowRef = useRef<
 		(p: { x: number; y: number }) => { x: number; y: number }
 	>((p) => p);
 
-    useEffect(() => {
+	useEffect(() => {
 		onLoadingChange(pendingExpand !== null);
 	}, [pendingExpand, onLoadingChange]);
 
@@ -106,7 +109,6 @@ function FlowInner({ initialNodes, initialEdges, originalText, onLoadingChange }
 		setSelectedNode(nodeData);
 	}, []);
 
-	/** Shared merge logic after any expand/user-fact API call. */
 	const mergeFragment = useCallback(
 		(parentNode: ArgumentNodeData, data: GraphData) => {
 			const parent = getNode(parentNode.id);
@@ -122,6 +124,17 @@ function FlowInner({ initialNodes, initialEdges, originalText, onLoadingChange }
 		[getNode, handleNodeClick, setEdges, setNodes]
 	);
 
+	// ── Attack mode ──────────────────────────────────────────────────────────
+
+	const { active: attackActive, moves: attackMoves, toggle: toggleAttack, clearMoves } = useAttackMode({
+		getNodes: getNodes as () => ArgumentFlowNode[],
+		getEdges,
+		originalText,
+		onMerge: mergeFragment,
+	});
+
+	// ── Manual expand (popup) ────────────────────────────────────────────────
+
 	const runExpandFact = useCallback(
 		async (
 			parentNode: ArgumentNodeData,
@@ -129,9 +142,7 @@ function FlowInner({ initialNodes, initialEdges, originalText, onLoadingChange }
 			text: string,
 			index: number
 		) => {
-			if (expandInFlightRef.current) {
-				throw new Error("Wait for the current add to finish.");
-			}
+			if (expandInFlightRef.current) throw new Error("Wait for the current add to finish.");
 			const key = factKey(kind, index);
 			expandInFlightRef.current = true;
 			setPendingExpand({ nodeId: parentNode.id, factKey: key });
@@ -180,9 +191,7 @@ function FlowInner({ initialNodes, initialEdges, originalText, onLoadingChange }
 
 	const handleUserFact = useCallback(
 		async (kind: FactKind, text: string) => {
-			if (!selectedNode || expandInFlightRef.current) {
-				throw new Error("Wait for the current add to finish.");
-			}
+			if (!selectedNode || expandInFlightRef.current) throw new Error("Wait for the current add to finish.");
 			expandInFlightRef.current = true;
 			const key = `user:${kind}:${Date.now()}`;
 			setPendingExpand({ nodeId: selectedNode.id, factKey: key });
@@ -214,12 +223,10 @@ function FlowInner({ initialNodes, initialEdges, originalText, onLoadingChange }
 		[selectedNode, originalText, mergeFragment]
 	);
 
-	/** Remove a suggested fact from a node's data and re-propagate strength. */
 	const handleDeleteFact = useCallback(
 		(kind: FactKind, index: number) => {
 			if (!selectedNode) return;
 			const nodeId = selectedNode.id;
-
 			setNodes((nds) => {
 				const updated = nds.map((n) => {
 					if (n.id !== nodeId) return n;
@@ -233,56 +240,38 @@ function FlowInner({ initialNodes, initialEdges, originalText, onLoadingChange }
 				});
 				return propagateArgumentStrengths(updated, edges);
 			});
-
 			setSelectedNode((prev) => {
 				if (!prev || prev.id !== nodeId) return prev;
 				if (kind === "counterargument") {
-					return {
-						...prev,
-						counterarguments: prev.counterarguments.filter((_, i) => i !== index),
-					};
+					return { ...prev, counterarguments: prev.counterarguments.filter((_, i) => i !== index) };
 				}
-				return {
-					...prev,
-					further_supports: prev.further_supports.filter((_, i) => i !== index),
-				};
+				return { ...prev, further_supports: prev.further_supports.filter((_, i) => i !== index) };
 			});
-
 			setNodeDataVersion((v) => v + 1);
 		},
-		// edgesRef is a stable ref — safe to omit from deps.
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[selectedNode, setNodes]
+		[selectedNode, setNodes, edges]
 	);
+
+	// ── Node change / layout ─────────────────────────────────────────────────
 
 	const handleNodesChange = useCallback(
 		(changes: NodeChange<ArgumentFlowNode>[]) => {
 			onNodesChange(changes);
-
-			const hasRemoval = changes.some((c) => c.type === "remove");
-			if (!hasRemoval) return;
-
+			if (!changes.some((c) => c.type === "remove")) return;
 			const removedIds = new Set(
 				changes
 					.filter((c): c is Extract<NodeChange<ArgumentFlowNode>, { type: "remove" }> => c.type === "remove")
 					.map((c) => c.id)
 			);
-			setSelectedNode((prev) =>
-				prev && removedIds.has(prev.id) ? null : prev
-			);
-
-			// Propagate using the ref so the updater always sees the current
-			// edges, not whatever was closed over when this callback was created.
+			setSelectedNode((prev) => (prev && removedIds.has(prev.id) ? null : prev));
 			setNodes((nds) => propagateArgumentStrengths(nds, edges));
 		},
-		[onNodesChange, setNodes]
+		[onNodesChange, setNodes, edges]
 	);
 
 	const graphStructureKey = useMemo(
 		() =>
-			edges
-				.map((e) => `${e.id}:${e.source}:${e.target}:${String(e.data?.relation ?? "")}`)
-				.join("|") +
+			edges.map((e) => `${e.id}:${e.source}:${e.target}:${String(e.data?.relation ?? "")}`).join("|") +
 			"|" +
 			[...nodes.map((n) => n.id)].sort().join(","),
 		[edges, nodes]
@@ -291,12 +280,13 @@ function FlowInner({ initialNodes, initialEdges, originalText, onLoadingChange }
 	useLayoutEffect(() => {
 		setNodes((curr) => propagateArgumentStrengths(curr, edges));
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [graphStructureKey, nodeDataVersion, edges]);
-    useEffect(() => {
-        setNodes((curr) => propagateArgumentStrengths(curr, edges));
-    }, [])
+	}, [graphStructureKey, nodeDataVersion]);
 
-	// Sync the popup's node data when strengths change.
+	useEffect(() => {
+		setNodes((curr) => propagateArgumentStrengths(curr, edges));
+	}, []);  // eslint-disable-line react-hooks/exhaustive-deps
+
+	// Sync popup when strengths change
 	useEffect(() => {
 		setSelectedNode((prev) => {
 			if (!prev) return prev;
@@ -305,6 +295,8 @@ function FlowInner({ initialNodes, initialEdges, originalText, onLoadingChange }
 			return { ...m.data, onNodeClick: prev.onNodeClick };
 		});
 	}, [nodes]);
+
+	// ── Render ───────────────────────────────────────────────────────────────
 
 	const enrichedNodes: ArgumentFlowNode[] = nodes.map((n) => ({
 		...n,
@@ -318,10 +310,7 @@ function FlowInner({ initialNodes, initialEdges, originalText, onLoadingChange }
 		const vis = edgeStrokeFromChildStrength(childStrength);
 		const mk = markerSizeFromChildStrength(childStrength);
 		const rel = String(e.data?.relation ?? "");
-		const color =
-			rel === "supports" || rel === "contradicts"
-				? RELATION_COLORS[rel]
-				: "#4a4a55";
+		const color = rel === "supports" || rel === "contradicts" ? RELATION_COLORS[rel] : "#4a4a55";
 		const strokeColor = hexToRgba(color, vis.strokeOpacity);
 		return {
 			...e,
@@ -336,8 +325,7 @@ function FlowInner({ initialNodes, initialEdges, originalText, onLoadingChange }
 	});
 
 	const onConnect = useCallback(
-		(params: Connection) =>
-			setEdges((eds) => addEdge({ ...params, animated: false }, eds)),
+		(params: Connection) => setEdges((eds) => addEdge({ ...params, animated: false }, eds)),
 		[setEdges]
 	);
 
@@ -396,9 +384,7 @@ function FlowInner({ initialNodes, initialEdges, originalText, onLoadingChange }
 						onClose={() => setSelectedNode(null)}
 						mergedFactKeys={new Set(mergedFactKeysByNodeId[selectedNode.id] ?? [])}
 						pendingExpandFactKey={
-							pendingExpand?.nodeId === selectedNode.id
-								? pendingExpand.factKey
-								: null
+							pendingExpand?.nodeId === selectedNode.id ? pendingExpand.factKey : null
 						}
 						anyExpandInFlight={pendingExpand !== null}
 						onExpandFact={handlePopupExpandFact}
@@ -407,6 +393,24 @@ function FlowInner({ initialNodes, initialEdges, originalText, onLoadingChange }
 					/>
 				) : null}
 			</ReactFlow>
+
+			{/* Attack mode controls — positioned top-right, pushed down if panel open */}
+			<div className={styles.attackControls}>
+				<AttackModeButton
+					active={attackActive}
+					onToggle={toggleAttack}
+					disabled={pendingExpand !== null}
+				/>
+			</div>
+
+			{(attackActive || attackMoves.length > 0) && (
+				<AttackModePanel
+					moves={attackMoves}
+					active={attackActive}
+					onStop={toggleAttack}
+					onClose={clearMoves}
+				/>
+			)}
 		</>
 	);
 }
@@ -414,7 +418,7 @@ function FlowInner({ initialNodes, initialEdges, originalText, onLoadingChange }
 type Props = {
 	graphData: GraphData;
 	originalText: string;
-    onLoadingChange: (loading: boolean) => void;
+	onLoadingChange: (loading: boolean) => void;
 };
 
 export default function GraphCanvas({ graphData, originalText, onLoadingChange }: Props) {
@@ -441,7 +445,7 @@ export default function GraphCanvas({ graphData, originalText, onLoadingChange }
 					initialNodes={initialNodes}
 					initialEdges={initialEdges}
 					originalText={originalText}
-                    onLoadingChange={onLoadingChange}
+					onLoadingChange={onLoadingChange}
 				/>
 			</div>
 		</ReactFlowProvider>

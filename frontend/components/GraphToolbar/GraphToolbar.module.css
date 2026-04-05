@@ -19,7 +19,6 @@
 	color: var(--muted);
 	cursor: pointer;
 	transition: color 0.15s, border-color 0.15s, background 0.15s;
-    border: 1px solid #6b7fd7;
 }
 
 .btn:hover:not(:disabled) {

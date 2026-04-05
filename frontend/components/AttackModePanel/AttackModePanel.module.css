@@ -1,0 +1,228 @@
+.panel {
+	position: fixed;
+	top: 16px;
+	right: 16px;
+	z-index: 50;
+	width: 300px;
+	background: #0a0a0e;
+	border: 1px solid #dc5050;
+	border-radius: 12px;
+	overflow: hidden;
+	box-shadow:
+		0 0 0 1px rgba(220, 80, 80, 0.08),
+		0 8px 40px rgba(0, 0, 0, 0.6),
+		0 0 60px rgba(220, 80, 80, 0.06);
+	display: flex;
+	flex-direction: column;
+	max-height: min(80vh, 520px);
+}
+
+.header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 14px;
+	border-bottom: 1px solid rgba(220, 80, 80, 0.2);
+	background: rgba(220, 80, 80, 0.06);
+	flex-shrink: 0;
+}
+
+.headerLeft {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* Pulsing red dot while active */
+.pulse {
+	display: inline-block;
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: #dc5050;
+	animation: blink 1.1s ease-in-out infinite;
+	flex-shrink: 0;
+}
+
+@keyframes blink {
+	0%, 100% { opacity: 1; }
+	50%       { opacity: 0.25; }
+}
+
+.title {
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: #fca5a5;
+	font-family: var(--font-mono);
+}
+
+.headerRight {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.stopBtn,
+.closeBtn {
+	font-size: 11px;
+	font-weight: 700;
+	font-family: var(--font-mono);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: #fca5a5;
+	background: rgba(220, 80, 80, 0.12);
+	border: 1px solid rgba(220, 80, 80, 0.35);
+	border-radius: 6px;
+	padding: 4px 10px;
+	cursor: pointer;
+	transition: background 0.15s, border-color 0.15s;
+}
+
+.stopBtn:hover,
+.closeBtn:hover {
+	background: rgba(220, 80, 80, 0.22);
+	border-color: rgba(220, 80, 80, 0.6);
+}
+
+/* ── Move list ── */
+
+.moves {
+	overflow-y: auto;
+	padding: 10px;
+	display: flex;
+	flex-direction: column;
+	gap: 7px;
+}
+
+.moves::-webkit-scrollbar { width: 4px; }
+.moves::-webkit-scrollbar-track { background: transparent; }
+.moves::-webkit-scrollbar-thumb { background: #2a2a30; border-radius: 2px; }
+
+.empty {
+	font-size: 12px;
+	color: #52525b;
+	font-family: var(--font-mono);
+	padding: 6px 2px;
+}
+
+/* ── Single move card ── */
+
+.move {
+	border-radius: 8px;
+	padding: 9px 11px;
+	border: 1px solid transparent;
+	background: rgba(255, 255, 255, 0.03);
+	transition: border-color 0.2s;
+}
+
+.move.pending {
+	border-color: rgba(220, 80, 80, 0.25);
+}
+
+.move.done {
+	border-color: rgba(45, 159, 106, 0.25);
+}
+
+.move.error {
+	border-color: rgba(220, 80, 80, 0.15);
+	opacity: 0.65;
+}
+
+.moveTop {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	margin-bottom: 5px;
+}
+
+/* Colour pip matching node type colours */
+.strengthPip {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	flex-shrink: 0;
+}
+.strengthPip[data-strength="true"]       { background: #2d9f6a; }
+.strengthPip[data-strength="strong"]     { background: #6b7fd7; }
+.strengthPip[data-strength="weak"]       { background: #71717a; }
+.strengthPip[data-strength="fallacious"] { background: #ea580c; }
+.strengthPip[data-strength="false"]      { background: #dc5050; }
+
+.targetLabel {
+	font-size: 12px;
+	font-weight: 600;
+	color: #e4e4e7;
+	flex: 1;
+	line-height: 1.3;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.statusIcon {
+	font-size: 11px;
+	flex-shrink: 0;
+	color: #52525b;
+}
+
+.move.done  .statusIcon { color: #2d9f6a; }
+.move.error .statusIcon { color: #dc5050; }
+
+.counterText {
+	font-size: 11px;
+	color: #71717a;
+	line-height: 1.45;
+	font-style: italic;
+	margin-bottom: 0;
+	/* truncate to 2 lines */
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.added {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-top: 6px;
+}
+
+.addedChip {
+	font-size: 10px;
+	font-family: var(--font-mono);
+	color: #6ee7b7;
+	background: rgba(45, 159, 106, 0.1);
+	border: 1px solid rgba(45, 159, 106, 0.2);
+	border-radius: 4px;
+	padding: 2px 6px;
+	/* single line with ellipsis */
+	max-width: 200px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.errText {
+	font-size: 10px;
+	color: #dc5050;
+	margin-top: 4px;
+}
+
+/* ── Spinner ── */
+
+.spinner {
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	border: 1.5px solid rgba(220, 80, 80, 0.25);
+	border-top-color: #dc5050;
+	animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
+}

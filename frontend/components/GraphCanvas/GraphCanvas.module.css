@@ -25,3 +25,11 @@
 	background: #141418 !important;
 	color: var(--text) !important;
 }
+
+/* Attack mode toggle button — bottom-left above the flow controls */
+.attackControls {
+	position: absolute;
+	bottom: 56px;
+	right: 16px;
+	z-index: 10;
+}
