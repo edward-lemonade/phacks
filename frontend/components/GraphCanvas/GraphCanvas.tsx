@@ -77,9 +77,10 @@ type FlowInnerProps = {
 	initialNodes: ArgumentFlowNode[];
 	initialEdges: Edge<EdgeData>[];
 	originalText: string;
+    onLoadingChange: (loading: boolean) => void;
 };
 
-function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps) {
+function FlowInner({ initialNodes, initialEdges, originalText, onLoadingChange }: FlowInnerProps) {
 	const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
 	const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 	const [selectedNode, setSelectedNode] = useState<ArgumentNodeData | null>(null);
@@ -97,6 +98,9 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 		(p: { x: number; y: number }) => { x: number; y: number }
 	>((p) => p);
 
+    useEffect(() => {
+		onLoadingChange(pendingExpand !== null);
+	}, [pendingExpand, onLoadingChange]);
 
 	const handleNodeClick = useCallback((nodeData: ArgumentNodeData) => {
 		setSelectedNode(nodeData);
@@ -410,9 +414,10 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 type Props = {
 	graphData: GraphData;
 	originalText: string;
+    onLoadingChange: (loading: boolean) => void;
 };
 
-export default function GraphCanvas({ graphData, originalText }: Props) {
+export default function GraphCanvas({ graphData, originalText, onLoadingChange }: Props) {
 	const noopClick = useCallback((_d: ArgumentNodeData) => {}, []);
 
 	const initialNodes: ArgumentFlowNode[] = graphData.nodes.map((n) => ({
@@ -436,6 +441,7 @@ export default function GraphCanvas({ graphData, originalText }: Props) {
 					initialNodes={initialNodes}
 					initialEdges={initialEdges}
 					originalText={originalText}
+                    onLoadingChange={onLoadingChange}
 				/>
 			</div>
 		</ReactFlowProvider>

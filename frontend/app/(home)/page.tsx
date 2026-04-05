@@ -10,6 +10,7 @@ import TextInput from "@/components/TextInput";
 import { apiUrl } from "@/lib/api";
 import type { GraphData } from "@/lib/types";
 import pageStyles from "./page.module.css";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const GraphCanvas = dynamic(() => import("@/components/GraphCanvas"), {
 	ssr: false,
@@ -33,6 +34,9 @@ export default function HomePage() {
 	const [submitCount, setSubmitCount] = useState(0);
 	const [hasThesis, setHasThesis] = useState(false);
 	const [thesisBusy, setThesisBusy] = useState(false);
+    const [expandLoading, setExpandLoading] = useState(false);
+
+    const isLoading = loading || thesisBusy || expandLoading;
 
 	const handleSubmit = async (text: string) => {
 		setLoading(true);
@@ -125,11 +129,13 @@ export default function HomePage() {
 				</Sidebar>
 			}
 		>
+            <LoadingSpinner visible={isLoading} />
 			{graphData ? (
 				<GraphCanvas
 					key={submitCount}
 					graphData={graphData}
 					originalText={originalText}
+                    onLoadingChange={setExpandLoading}
 				/>
 			) : (
 				<div className={pageStyles.canvasEmpty} />
