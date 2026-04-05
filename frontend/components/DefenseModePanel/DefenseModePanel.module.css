@@ -1,0 +1,254 @@
+.panel {
+	position: fixed;
+	top: 16px;
+	right: 16px;
+	z-index: 50;
+	width: 300px;
+	background: #0a0a0e;
+	border: 1px solid #2d9f6a;
+	border-radius: 12px;
+	overflow: hidden;
+	box-shadow:
+		0 0 0 1px rgba(45, 159, 106, 0.08),
+		0 8px 40px rgba(0, 0, 0, 0.6),
+		0 0 60px rgba(45, 159, 106, 0.06);
+	display: flex;
+	flex-direction: column;
+	max-height: min(80vh, 520px);
+}
+
+.header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 14px;
+	border-bottom: 1px solid rgba(45, 159, 106, 0.2);
+	background: rgba(45, 159, 106, 0.06);
+	flex-shrink: 0;
+}
+
+.headerLeft {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.headerRight {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.title {
+	font-size: 13px;
+	font-weight: 600;
+	color: #a5d8ff;
+}
+
+/* Pulsing green dot while active */
+.pulse {
+	display: inline-block;
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: #2d9f6a;
+	animation: blink 1.1s ease-in-out infinite;
+	flex-shrink: 0;
+}
+
+@keyframes blink {
+	0%, 100% { opacity: 1; }
+	50%       { opacity: 0.25; }
+}
+
+.stopBtn {
+	padding: 4px 10px;
+	background: rgba(45, 159, 106, 0.2);
+	border: 1px solid rgba(45, 159, 106, 0.4);
+	border-radius: 4px;
+	color: #a5d8ff;
+	font-size: 12px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.15s;
+}
+
+.stopBtn:hover {
+	background: rgba(45, 159, 106, 0.3);
+	border-color: rgba(45, 159, 106, 0.6);
+}
+
+.closeBtn {
+	width: 20px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: transparent;
+	border: none;
+	color: #a5d8ff;
+	cursor: pointer;
+	font-size: 12px;
+	border-radius: 4px;
+	transition: background 0.15s;
+}
+
+.closeBtn:hover {
+	background: rgba(45, 159, 106, 0.2);
+}
+
+.moves {
+	flex: 1;
+	overflow-y: auto;
+	padding: 10px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.empty {
+	padding: 12px 8px;
+	font-size: 12px;
+	color: var(--muted);
+	text-align: center;
+	font-style: italic;
+	margin: 0;
+}
+
+.move {
+	padding: 10px;
+	border: 1px solid rgba(45, 159, 106, 0.15);
+	border-radius: 6px;
+	background: rgba(45, 159, 106, 0.02);
+	transition: all 0.2s;
+}
+
+.move.pending {
+	background: rgba(45, 159, 106, 0.08);
+	border-color: rgba(45, 159, 106, 0.25);
+}
+
+.move.done {
+	background: rgba(45, 159, 106, 0.04);
+	border-color: rgba(45, 159, 106, 0.1);
+}
+
+.move.error {
+	background: rgba(220, 80, 80, 0.04);
+	border-color: rgba(220, 80, 80, 0.15);
+}
+
+.moveTop {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 6px;
+}
+
+.strengthPip {
+	display: inline-block;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	flex-shrink: 0;
+}
+
+.strengthPip[data-strength="true"] { background: #2d9f6a; }
+.strengthPip[data-strength="strong"] { background: #4ec968; }
+.strengthPip[data-strength="weak"] { background: #fca5a5; }
+.strengthPip[data-strength="fallacious"] { background: #dc5050; }
+.strengthPip[data-strength="false"] { background: #9b2c2c; }
+
+.targetInfo {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+}
+
+.targetLabel {
+	font-size: 12px;
+	font-weight: 600;
+	color: #f1f1f5;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	flex: 1;
+	min-width: 0;
+}
+
+.moveTypeBadge {
+	display: inline-block;
+	padding: 2px 6px;
+	border-radius: 3px;
+	font-size: 10px;
+	font-weight: 600;
+	white-space: nowrap;
+	flex-shrink: 0;
+	background: rgba(45, 159, 106, 0.2);
+	color: #a5d8ff;
+	border: 1px solid rgba(45, 159, 106, 0.3);
+}
+
+.statusIcon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+	font-size: 12px;
+	font-weight: 600;
+	color: #2d9f6a;
+}
+
+.move.error .statusIcon {
+	color: #dc5050;
+}
+
+.spinner {
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	border: 2px solid rgba(45, 159, 106, 0.3);
+	border-top-color: #2d9f6a;
+	border-radius: 50%;
+	animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
+}
+
+.supportText {
+	font-size: 12px;
+	color: #c9c9ce;
+	margin: 0 0 6px 0;
+	font-style: italic;
+}
+
+.added {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+}
+
+.addedChip {
+	display: inline-block;
+	padding: 3px 6px;
+	background: rgba(45, 159, 106, 0.15);
+	border-radius: 3px;
+	font-size: 11px;
+	color: #a5d8ff;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 100%;
+}
+
+.errText {
+	font-size: 11px;
+	color: #dc5050;
+	margin: 4px 0 0 0;
+}

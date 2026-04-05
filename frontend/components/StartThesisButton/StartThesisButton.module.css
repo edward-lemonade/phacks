@@ -1,8 +1,8 @@
 .wrap {
 	position: fixed;
-	/* sits in the canvas area, top-left, clear of the sidebar toggle */
 	top: 16px;
-	left: calc(min(380px, 92vw) + 28px); /* sidebar width + gap */
+	left: 50%;
+	transform: translateX(-50%);
 	z-index: 50;
 	display: flex;
 	flex-direction: column;

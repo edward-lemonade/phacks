@@ -30,8 +30,11 @@ import AnalysisPopup from "@/components/AnalysisPopup";
 import ArgumentNode from "@/components/ArgumentNode";
 import AttackModeButton from "@/components/AttackModeButton";
 import AttackModePanel from "@/components/AttackModePanel";
+import DefenseModeButton from "@/components/DefenseModeButton";
+import DefenseModePanel from "@/components/DefenseModePanel";
 import { useHierarchicalLayout } from "@/hooks/useHierarchicalLayout";
 import { useAttackMode } from "@/hooks/useAttackMode";
+import { useDefenseMode } from "@/hooks/useDefenseMode";
 import { apiUrl } from "@/lib/api";
 import { factKey, type FactKind } from "@/lib/factKey";
 import {
@@ -127,6 +130,15 @@ function FlowInner({ initialNodes, initialEdges, originalText, onLoadingChange }
 	// ── Attack mode ──────────────────────────────────────────────────────────
 
 	const { active: attackActive, moves: attackMoves, toggle: toggleAttack, clearMoves } = useAttackMode({
+		getNodes: getNodes as () => ArgumentFlowNode[],
+		getEdges,
+		originalText,
+		onMerge: mergeFragment,
+	});
+
+	// ── Defense mode ─────────────────────────────────────────────────────────
+
+	const { active: defenseActive, moves: defenseMoves, toggle: toggleDefense, clearMoves: clearDefenseMoves } = useDefenseMode({
 		getNodes: getNodes as () => ArgumentFlowNode[],
 		getEdges,
 		originalText,
@@ -394,11 +406,16 @@ function FlowInner({ initialNodes, initialEdges, originalText, onLoadingChange }
 				) : null}
 			</ReactFlow>
 
-			{/* Attack mode controls — positioned top-right, pushed down if panel open */}
+			{/* Attack and defense mode controls — positioned top-right, pushed down if panels open */}
 			<div className={styles.attackControls}>
 				<AttackModeButton
 					active={attackActive}
 					onToggle={toggleAttack}
+					disabled={pendingExpand !== null}
+				/>
+				<DefenseModeButton
+					active={defenseActive}
+					onToggle={toggleDefense}
 					disabled={pendingExpand !== null}
 				/>
 			</div>
@@ -409,6 +426,15 @@ function FlowInner({ initialNodes, initialEdges, originalText, onLoadingChange }
 					active={attackActive}
 					onStop={toggleAttack}
 					onClose={clearMoves}
+				/>
+			)}
+
+			{(defenseActive || defenseMoves.length > 0) && (
+				<DefenseModePanel
+					moves={defenseMoves}
+					active={defenseActive}
+					onStop={toggleDefense}
+					onClose={clearDefenseMoves}
 				/>
 			)}
 		</>

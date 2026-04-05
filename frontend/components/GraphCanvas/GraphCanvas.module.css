@@ -29,7 +29,11 @@
 /* Attack mode toggle button — bottom-left above the flow controls */
 .attackControls {
 	position: absolute;
-	bottom: 56px;
+	display: flex;           /* was missing — flex: 1 alone does nothing here */
+	flex-direction: column;
+	top: 56px;
 	right: 16px;
+	align-items: stretch;    /* stretches children to the widest button's width */
+	gap: 4px;
 	z-index: 10;
 }
