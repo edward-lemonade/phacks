@@ -238,7 +238,7 @@ async def analyze(req: AnalyzeRequest):
             return raw
         def RUN_AI():
             raw = run(prompt)
-            with open("output.txt", "w") as f:
+            with open("output.txt", "r") as f:
                 f.write(raw)
             f.close()
             return raw
