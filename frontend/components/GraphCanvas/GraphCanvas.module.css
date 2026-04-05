@@ -31,7 +31,7 @@
 	position: absolute;
 	display: flex;           /* was missing — flex: 1 alone does nothing here */
 	flex-direction: column;
-	top: 56px;
+	bottom: 64px;
 	right: 16px;
 	align-items: stretch;    /* stretches children to the widest button's width */
 	gap: 4px;
