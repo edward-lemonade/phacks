@@ -28,6 +28,19 @@ export default function Sidebar({
 			className={`${styles.sidebar}${open ? "" : ` ${styles.collapsed}`}`}
 			aria-label="Input panel"
 		>
+			<div className={styles.inner}>
+				<div className={styles.brandStage}>
+					<h1 className={styles.brand} aria-label={brand}>
+						{brand}
+					</h1>
+				</div>
+
+				<div className={styles.expandedBlock}>
+					{children}
+					{error ? <p className={styles.error}>{error}</p> : null}
+				</div>
+			</div>
+
 			<button
 				type="button"
 				className={styles.toggle}
@@ -36,26 +49,12 @@ export default function Sidebar({
 				aria-controls={id}
 				title={open ? "Collapse panel" : "Expand panel"}
 			>
-				<span className={styles.toggleIcon} aria-hidden>
-					{open ? "‹" : "›"}
+				<span className={styles.toggleGrip} aria-hidden>
+					<span className={styles.toggleGripLine} />
+					<span className={styles.toggleGripLine} />
+					<span className={styles.toggleGripLine} />
 				</span>
 			</button>
-
-			<div className={styles.inner}>
-				<h1 className={styles.brand} aria-label={brand}>
-					{brand.split("").map((ch, i) => (
-						<span key={i} className={styles.brandChar}>
-							{ch}
-						</span>
-					))}
-				</h1>
-
-				<div className={styles.expandedBlock}>
-					<p className={styles.tagline}>{tagline}</p>
-					{children}
-					{error ? <p className={styles.error}>{error}</p> : null}
-				</div>
-			</div>
 		</aside>
 	);
 }
