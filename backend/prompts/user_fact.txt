@@ -13,39 +13,31 @@ Original passage for context:
 
 Return ONLY valid JSON. No markdown, no code fences.
 
-All node types allowed: thesis, subclaim, evidence, axiom, counterclaim.
-
-Every new node MUST include ALL of the following (never omit; never use empty arrays):
-- id, type, label (max 8 words), detail, strength (one of true|strong|weak|fallacious|false)
-- counterarguments: exactly 2–3 short strings
-- further_supports: exactly 1–3 short strings
-- strength_reasoning: one sentence explaining the strength label
-
 ---
 
 ### When fact_kind is "counterargument"
 
 Produce 2–4 nodes total:
 
-1. Exactly one node with type "counterclaim" representing the user's objection.
-   It is the only node that links to the parent.
+1. Exactly one "counterclaim" node representing the user's objection.
+   It is the only node that links directly to the parent.
 
-2. At least one additional node typed "evidence", "subclaim", or "axiom" that supports
-   or elaborates the counterclaim.
+2. At least one additional node typed "evidence", "subclaim", or "axiom"
+   that supports or elaborates the counterclaim.
 
 Edges:
-- counterclaim → parent: relation "contradicts"
-- each evidence/subclaim/axiom → counterclaim: relation "supports"
+- counterclaim → {parent_node_id}: relation "contradicts"
+- each evidence/subclaim/axiom → counterclaim id: relation "supports"
 
-Do NOT connect evidence/subclaim/axiom directly to the parent.
-Do NOT use "thesis" for this expansion.
+Do NOT connect evidence/subclaim/axiom directly to {parent_node_id}.
+Do NOT use "thesis".
 
 ---
 
 ### When fact_kind is "further_support"
 
-Produce 1–3 nodes only. Types: subclaim, evidence, axiom (pick what fits).
+Produce 1–3 nodes only. Types: subclaim, evidence, axiom.
 
-Edges: each new node → parent, relation "supports".
+Edges: each new node → {parent_node_id}, relation "supports".
 
 ---

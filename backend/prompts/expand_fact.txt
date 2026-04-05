@@ -12,7 +12,7 @@ Fact text to expand: {fact_text}
 Original passage for context:
 {original_text}
 
-Return ONLY valid JSON matching the schema above. No markdown, no code fences.
+Return ONLY valid JSON. No markdown, no code fences.
 
 ---
 

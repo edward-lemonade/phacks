@@ -1,29 +1,31 @@
-You fill in missing critical-analysis fields on argument-map nodes so users can keep clicking "Add" to grow the graph.
+You fill in missing critical-analysis fields on argument-map nodes.
 
 Original passage:
 {original_text}
 
 Expand context — fact kind: {fact_kind}
-Fact text that was expanded: {fact_text}
+Fact text: {fact_text}
 
 Parent node: {parent_node_id} ({parent_type}) — {parent_label}
 
-Nodes that need complete analysis (JSON array):
+Nodes that need analysis:
 {nodes_json}
 
-Return ONLY valid JSON: a single object whose keys are node ids from the array above.
-Each value must be an object with:
-- "counterarguments":   exactly 0–3 short distinct strings
-- "further_supports":   exactly 0–3 short strings
-- "strength_reasoning": one sentence explaining the node's strength label
+For each node id listed above, return a block in this exact format — no JSON, no markdown:
 
-Never return empty arrays. Infer from labels, details, and context when the text is silent.
+NODE_ANALYSIS
+id: <node id>
+counterarguments:
+- <objection 1>
+- <objection 2>
+- <objection 3>
+further_supports:
+- <support 1>
+- <support 2>
+strength_reasoning: <one sentence>
+---
 
-Example shape:
-{{
-  "x1": {{
-    "counterarguments":   ["...", "...", "..."],
-    "further_supports":   ["...", "..."],
-    "strength_reasoning": "..."
-  }}
-}}
+Rules:
+- counterarguments: exactly 0–3 items.
+- further_supports: exactly 0–3 items. 
+- Output one block per node. Every block ends with ---.

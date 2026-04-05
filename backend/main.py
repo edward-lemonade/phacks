@@ -12,10 +12,9 @@ from models import (
     AnalyzeRequest,
     ExpandFactRequest,
     GraphResponse,
-    NodeAnalysisRequest,
-    NodeAnalysisResponse,
     UserFactRequest,
 )
+from parser import parse_enrich_response, parse_graph_response, parse_node_analysis
 from prompts import (
     COUNTERARGUMENT_EXPAND_REPAIR_PROMPT,
     ENRICH_EXPAND_NODES_PROMPT,
@@ -76,85 +75,14 @@ def _response_text(resp) -> str:
     return "\n".join(parts).strip()
 
 
-def extract_json(text: str) -> dict:
-    text = text.strip()
-    fence = re.match(r"^```(?:json)?\s*\n([\s\S]*?)\n```\s*$", text)
-    if fence:
-        text = fence.group(1).strip()
-    parsed = json.loads(text)
-    # Model sometimes returns a bare node array instead of {nodes, edges}
-    if isinstance(parsed, list):
-        parsed = {"nodes": parsed, "edges": []}
-    return parsed
-
-def _enrich_expand_nodes_if_needed(data: dict, req) -> None:
-    nodes = data.get("nodes")
-    if not isinstance(nodes, list) or not nodes:
-        return
-    need_payload = []
-    for n in nodes:
-        if not isinstance(n, dict) or not n.get("id"):
-            continue
-        ca = n.get("counterarguments")
-        if not isinstance(ca, list):
-            ca = []
-        us = n.get("further_supports")
-        if not isinstance(us, list):
-            us = []
-        sr = str(n.get("strength_reasoning") or "").strip()
-        if len(ca) >= 2 and len(us) >= 1 and sr:
-            continue
-        need_payload.append(
-            {
-                "id": n["id"],
-                "type": n.get("type", "subclaim"),
-                "label": str(n.get("label", "")),
-                "detail": str(n.get("detail", "")),
-                "strength": str(n.get("strength", "weak")),
-            }
-        )
-    if not need_payload:
-        return
-    prompt = ENRICH_EXPAND_NODES_PROMPT.format(
-        original_text=req.original_text[:16000],
-        fact_kind=req.fact_kind,
-        fact_text=req.fact_text[:8000],
-        parent_node_id=req.parent_node_id,
-        parent_type=req.parent_type,
-        parent_label=req.parent_label[:2000],
-        nodes_json=json.dumps(need_payload, ensure_ascii=False),
+def _generate(prompt: str):
+    return get_client().models.generate_content(
+        model=MODEL_NAME,
+        contents=prompt,
     )
-    response = _generate(prompt)
-    raw = _response_text(response)
-    if not raw:
-        return
-    patch = extract_json(raw)
-    if not isinstance(patch, dict):
-        return
-    by_id = {
-        str(n["id"]): n
-        for n in nodes
-        if isinstance(n, dict) and n.get("id") is not None
-    }
-    for nid, fields in patch.items():
-        nid_s = str(nid)
-        if nid_s not in by_id or not isinstance(fields, dict):
-            continue
-        target = by_id[nid_s]
-        ca = fields.get("counterarguments")
-        if isinstance(ca, list):
-            cleaned = [str(x).strip() for x in ca if str(x).strip()]
-            if len(cleaned) >= 2:
-                target["counterarguments"] = cleaned[:3]
-        us = fields.get("further_supports")
-        if isinstance(us, list):
-            cleaned = [str(x).strip() for x in us if str(x).strip()]
-            if len(cleaned) >= 1:
-                target["further_supports"] = cleaned[:3]
-        sr = fields.get("strength_reasoning")
-        if isinstance(sr, str) and sr.strip():
-            target["strength_reasoning"] = sr.strip()
 
+
+# -- Counterargument topology validation ---------------------------------------
 
 COUNTERARGUMENT_CHILD_TYPES = frozenset({"evidence", "subclaim", "axiom"})
 
@@ -167,18 +95,13 @@ def _validate_counterargument_expand(data: dict, parent_id: str) -> Optional[str
     if not isinstance(edges, list):
         return "response must include an edges array"
 
-    cc_ids = [
-        n["id"]
-        for n in nodes
-        if isinstance(n, dict) and n.get("type") == "counterclaim"
-    ]
+    cc_ids = [n["id"] for n in nodes if isinstance(n, dict) and n.get("type") == "counterclaim"]
     if len(cc_ids) != 1:
         return "must include exactly one counterclaim node"
     cc_id = cc_ids[0]
 
     cc_to_parent = [
-        e
-        for e in edges
+        e for e in edges
         if isinstance(e, dict)
         and e.get("source") == cc_id
         and e.get("target") == parent_id
@@ -202,17 +125,13 @@ def _validate_counterargument_expand(data: dict, parent_id: str) -> Optional[str
         t = (n.get("type") or "").lower()
         if t not in COUNTERARGUMENT_CHILD_TYPES:
             return f"node {nid!r} must be type evidence, subclaim, or axiom (got {t!r})"
-        linked = False
-        for e in edges:
-            if not isinstance(e, dict):
-                continue
-            if (
-                e.get("source") == nid
-                and e.get("target") == cc_id
-                and e.get("relation") == "supports"
-            ):
-                linked = True
-                break
+        linked = any(
+            isinstance(e, dict)
+            and e.get("source") == nid
+            and e.get("target") == cc_id
+            and e.get("relation") == "supports"
+            for e in edges
+        )
         if not linked:
             return f"node {nid!r} must link to the counterclaim with supports"
 
@@ -225,6 +144,68 @@ def _validate_counterargument_expand(data: dict, parent_id: str) -> Optional[str
     return None
 
 
+# -- Node analysis enrichment --------------------------------------------------
+
+def _enrich_expand_nodes_if_needed(data: dict, req) -> None:
+    nodes = data.get("nodes")
+    if not isinstance(nodes, list) or not nodes:
+        return
+
+    need_payload = []
+    for n in nodes:
+        if not isinstance(n, dict) or not n.get("id"):
+            continue
+        ca = n.get("counterarguments") or []
+        us = n.get("further_supports") or []
+        sr = str(n.get("strength_reasoning") or "").strip()
+        if len(ca) >= 2 and len(us) >= 1 and sr:
+            continue
+        need_payload.append({
+            "id": n["id"],
+            "type": n.get("type", "subclaim"),
+            "label": str(n.get("label", "")),
+            "detail": str(n.get("detail", "")),
+            "strength": str(n.get("strength", "weak")),
+        })
+
+    if not need_payload:
+        return
+
+    prompt = ENRICH_EXPAND_NODES_PROMPT.format(
+        original_text=req.original_text[:16000],
+        fact_kind=req.fact_kind,
+        fact_text=req.fact_text[:8000],
+        parent_node_id=req.parent_node_id,
+        parent_type=req.parent_type,
+        parent_label=req.parent_label[:2000],
+        nodes_json=json.dumps(need_payload, ensure_ascii=False),
+    )
+    raw = _response_text(_generate(prompt))
+    if not raw:
+        return
+
+    patch = parse_enrich_response(raw)
+    by_id = {str(n["id"]): n for n in nodes if isinstance(n, dict) and n.get("id")}
+
+    for nid, fields in patch.items():
+        target = by_id.get(str(nid))
+        if not target or not isinstance(fields, dict):
+            continue
+        ca = fields.get("counterarguments")
+        if isinstance(ca, list):
+            cleaned = [str(x).strip() for x in ca if str(x).strip()]
+            if len(cleaned) >= 2:
+                target["counterarguments"] = cleaned[:3]
+        us = fields.get("further_supports")
+        if isinstance(us, list):
+            cleaned = [str(x).strip() for x in us if str(x).strip()]
+            if cleaned:
+                target["further_supports"] = cleaned[:3]
+        sr = fields.get("strength_reasoning")
+        if isinstance(sr, str) and sr.strip():
+            target["strength_reasoning"] = sr.strip()
+
+
 def _ensure_expand_node_analysis(nodes: list) -> None:
     for n in nodes:
         if not isinstance(n, dict):
@@ -232,97 +213,74 @@ def _ensure_expand_node_analysis(nodes: list) -> None:
         label = str(n.get("label", "this claim")).strip() or "this claim"
         short = label[:80]
 
-        ca = n.get("counterarguments")
-        if not isinstance(ca, list):
-            ca = []
-        ca = [str(x).strip() for x in ca if str(x).strip()]
+        ca = [str(x).strip() for x in (n.get("counterarguments") or []) if str(x).strip()]
         if len(ca) < 2:
-            ca.append(f'What evidence or reasoning could challenge "{short}"?')
+            ca.append(f'What reasoning could challenge "{short}"?')
         if len(ca) < 2:
             ca.append("Could a reader reasonably reject this claim on other grounds?")
         n["counterarguments"] = ca[:3]
 
-        us = n.get("further_supports")
-        if not isinstance(us, list):
-            us = []
-        us = [str(x).strip() for x in us if str(x).strip()]
-        if len(us) < 1:
-            us.append(f'What support, data, or clarification would make "{short}" more compelling?')
+        us = [str(x).strip() for x in (n.get("further_supports") or []) if str(x).strip()]
+        if not us:
+            us.append(f'What support would make "{short}" more compelling?')
         n["further_supports"] = us[:3]
 
         if not str(n.get("strength_reasoning") or "").strip():
             n["strength_reasoning"] = (
-                "The strength label reflects how well this claim is supported in the given context."
+                "The strength label reflects how well this claim is supported in context."
             )
 
 
-def _generate(prompt: str):
-    return get_client().models.generate_content(
-        model=MODEL_NAME,
-        contents=prompt,
-    )
-
+# -- Shared expand pipeline ----------------------------------------------------
 
 def _run_expand_pipeline(data: dict, req, fact_kind: str) -> GraphResponse:
-    """Shared post-processing for expand and user-fact endpoints."""
     if fact_kind == "counterargument":
         v_err = _validate_counterargument_expand(data, req.parent_node_id)
         if v_err:
-            repair = COUNTERARGUMENT_EXPAND_REPAIR_PROMPT.format(
-                validation_error=v_err,
-                parent_node_id=req.parent_node_id,
-                fact_text=req.fact_text[:8000],
-                original_text=req.original_text[:16000],
-            ) + json.dumps(data, ensure_ascii=False)
-            response2 = _generate(repair)
-            raw2 = _response_text(response2)
+            repair_prompt = (
+                COUNTERARGUMENT_EXPAND_REPAIR_PROMPT.format(
+                    validation_error=v_err,
+                    parent_node_id=req.parent_node_id,
+                    fact_text=req.fact_text[:8000],
+                    original_text=req.original_text[:16000],
+                )
+                + json.dumps(data, ensure_ascii=False)
+            )
+            raw2 = _response_text(_generate(repair_prompt))
             if not raw2:
                 raise ValueError("Empty repair model response")
-            data = extract_json(raw2)
+            data = parse_graph_response(raw2)
             v_err2 = _validate_counterargument_expand(data, req.parent_node_id)
             if v_err2:
                 raise HTTPException(
                     status_code=422,
                     detail=f"Counterargument expand shape invalid: {v_err2}",
                 )
+
     try:
         _enrich_expand_nodes_if_needed(data, req)
     except Exception as ex:
         print("expand enrich:", ex)
+
     nodes = data.get("nodes")
     if isinstance(nodes, list):
         _ensure_expand_node_analysis(nodes)
+
     return GraphResponse(**data)
 
 
-def get_AI_response(prompt):
-    response = _generate(prompt)
-    raw = _response_text(response)
-    with open("./test_response.txt", "w") as f:
-        f.write(raw)
-    return raw
-
-
-def get_mock_response():
-    with open("./test_response.txt", "r") as f:
-        raw = f.read()
-    return raw
-
+# -- Routes --------------------------------------------------------------------
 
 @app.post("/api/analyze", response_model=GraphResponse)
 async def analyze(req: AnalyzeRequest):
     if not req.text.strip():
         raise HTTPException(status_code=400, detail="Empty text")
-    prompt = GRAPH_PROMPT.format(text=req.text)
     try:
-        #raw = get_mock_response()
-        raw = get_AI_response(prompt)
+        raw = _response_text(_generate(GRAPH_PROMPT.format(text=req.text)))
         if not raw:
             raise ValueError("Empty model response")
-        data = extract_json(raw)
-        return GraphResponse(**data)
+        return GraphResponse(**parse_graph_response(raw))
     except Exception as e:
-        print("[Error]", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -330,53 +288,47 @@ async def analyze(req: AnalyzeRequest):
 async def expand_fact(req: ExpandFactRequest):
     if not req.fact_text.strip():
         raise HTTPException(status_code=400, detail="Empty fact text")
-    prompt = EXPAND_FACT_PROMPT.format(
-        parent_node_id=req.parent_node_id,
-        parent_type=req.parent_type,
-        parent_label=req.parent_label,
-        parent_detail=req.parent_detail,
-        fact_kind=req.fact_kind,
-        fact_text=req.fact_text,
-        original_text=req.original_text,
-    )
     try:
-        response = _generate(prompt)
-        raw = _response_text(response)
+        prompt = EXPAND_FACT_PROMPT.format(
+            parent_node_id=req.parent_node_id,
+            parent_type=req.parent_type,
+            parent_label=req.parent_label,
+            parent_detail=req.parent_detail,
+            fact_kind=req.fact_kind,
+            fact_text=req.fact_text,
+            original_text=req.original_text,
+        )
+        raw = _response_text(_generate(prompt))
         if not raw:
             raise ValueError("Empty model response")
-        data = extract_json(raw)
+        data = parse_graph_response(raw)
         return _run_expand_pipeline(data, req, req.fact_kind.strip().lower())
     except HTTPException:
         raise
     except Exception as e:
-        print("[Error]", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/api/user-fact", response_model=GraphResponse)
 async def user_fact(req: UserFactRequest):
-    """Expand a user-authored rebuttal or support into a subgraph with full AI analysis."""
     if not req.fact_text.strip():
         raise HTTPException(status_code=400, detail="Empty fact text")
-    prompt = USER_FACT_PROMPT.format(
-        parent_node_id=req.parent_node_id,
-        parent_type=req.parent_type,
-        parent_label=req.parent_label,
-        parent_detail=req.parent_detail,
-        fact_kind=req.fact_kind,
-        fact_text=req.fact_text,
-        original_text=req.original_text,
-    )
     try:
-        response = _generate(prompt)
-        raw = _response_text(response)
-        print(raw)
+        prompt = USER_FACT_PROMPT.format(
+            parent_node_id=req.parent_node_id,
+            parent_type=req.parent_type,
+            parent_label=req.parent_label,
+            parent_detail=req.parent_detail,
+            fact_kind=req.fact_kind,
+            fact_text=req.fact_text,
+            original_text=req.original_text,
+        )
+        raw = _response_text(_generate(prompt))
         if not raw:
             raise ValueError("Empty model response")
-        data = extract_json(raw)
+        data = parse_graph_response(raw)
         return _run_expand_pipeline(data, req, req.fact_kind.strip().lower())
     except HTTPException:
         raise
     except Exception as e:
-        print("[Error]", e)
         raise HTTPException(status_code=500, detail=str(e))

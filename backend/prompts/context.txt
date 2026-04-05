@@ -1,48 +1,45 @@
-## JSON Schema
+## Response Format
 
-Every response must be a single JSON object with exactly this shape:
+Do NOT return JSON. Return plain text using the structured format below.
+Each record starts with NODE or EDGE on its own line, followed by key: value pairs, and ends with ---.
 
-{{
-  "nodes": [ ...node objects... ],
-  "edges": [ ...edge objects... ]
-}}
+Strength values: true | strong | weak | fallacious | false
+Node types:      thesis | subclaim | evidence | axiom | counterclaim
+Edge relations:  supports | contradicts
 
-Never return a bare array. Never omit either key.
+For list fields (counterarguments, further_supports) write one item per line, each prefixed with "- ".
 
-### Node object — all fields required
+### Node record
 
-{{
-  "id":                string,   // unique within the response, e.g. "n1"
-  "type":              string,   // one of: thesis | subclaim | evidence | axiom | counterclaim
-  "label":             string,   // max 8 words
-  "detail":            string,   // full sentence or concise paraphrase
-  "strength":          string,   // one of: true | strong | weak | fallacious | false
-  "counterarguments":  string[], // exactly 2–3 short strings
-  "further_supports":  string[], // exactly 1–3 short strings
-  "strength_reasoning": string   // one sentence explaining the strength label
-}}
+NODE
+id: <unique id, e.g. n1>
+type: <node type>
+label: <max 8 words>
+detail: <full sentence or concise paraphrase>
+strength: <strength value>
+counterarguments:
+- <objection 1>
+- <objection 2>
+- <objection 3>
+further_supports:
+- <support 1>
+- <support 2>
+strength_reasoning: <one sentence>
+---
 
-### Edge object — all fields required
+### Edge record
 
-{{
-  "id":       string, // unique within the response, e.g. "e1"
-  "source":   string, // id of the child / supporting node
-  "target":   string, // id of the parent / supported node
-  "relation": string  // one of: supports | contradicts
-}}
+EDGE
+id: <unique id, e.g. e1>
+source: <child node id>
+target: <parent node id>
+relation: <supports | contradicts>
+---
 
-### Strength labels
+### Rules
 
-- "true"       — logically or axiomatically true
-- "strong"     — well supported; at most one counterclaim
-- "weak"       — multiple objections or thin support
-- "fallacious" — reasoning is flawed, not necessarily false
-- "false"      — logically or verifiably false in context
-
-### Edge direction convention
-
-Edges always point FROM child TO parent:
-  evidence → claim it supports
-  counterclaim → claim it attacks (relation: "contradicts")
-
-Never omit arrays. Never return empty arrays for counterarguments or further_supports.
+- Edges point FROM child TO parent (source = child, target = parent).
+- counterarguments: exactly 0–3 items.
+- further_supports: exactly 0–3 items.
+- Every node and edge must end with ---.
+- No JSON, no markdown, no code fences. Plain text only.
