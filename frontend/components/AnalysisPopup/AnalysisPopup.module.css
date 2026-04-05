@@ -133,11 +133,16 @@
 	color: #fca5a5;
 }
 
-.hint {
-	font-size: 12px;
-	color: var(--muted);
-	margin-bottom: 10px;
-	line-height: 1.45;
+.reason {
+	font-size: 14px;
+	color: #a1a1aa;
+	line-height: 1.55;
+}
+
+.strength {
+	border-top: 1px solid var(--border);
+	padding-top: 16px;
+	margin-top: 4px;
 }
 
 .factRow {
@@ -176,17 +181,141 @@
 	cursor: default;
 }
 
-.strength {
-	border-top: 1px solid var(--border);
-	padding-top: 16px;
+/* ── User-authored compose ── */
+
+.createRow {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 18px;
 	margin-top: 4px;
 }
 
-.reason {
-	font-size: 14px;
-	color: #a1a1aa;
-	line-height: 1.55;
+.createBtn {
+	flex: 1;
+	padding: 9px 14px;
+	font-size: 12px;
+	font-weight: 600;
+	font-family: var(--font-sans);
+	border-radius: 8px;
+	border: 1px solid var(--border);
+	background: var(--surface);
+	cursor: pointer;
+	transition: border-color 0.15s, background 0.15s, opacity 0.15s;
+	letter-spacing: 0.03em;
 }
+
+.createBtn:disabled {
+	opacity: 0.4;
+	cursor: default;
+}
+
+.createCounter {
+	color: #fca5a5;
+	border-color: rgba(220, 80, 80, 0.3);
+}
+
+.createCounter:hover:not(:disabled) {
+	background: rgba(220, 80, 80, 0.08);
+	border-color: rgba(220, 80, 80, 0.6);
+}
+
+.createSupport {
+	color: #6ee7b7;
+	border-color: rgba(45, 159, 106, 0.3);
+}
+
+.createSupport:hover:not(:disabled) {
+	background: rgba(45, 159, 106, 0.08);
+	border-color: rgba(45, 159, 106, 0.6);
+}
+
+.composeSection {
+	border: 1px solid var(--border);
+	border-radius: 10px;
+	padding: 14px;
+	margin-bottom: 18px;
+	background: rgba(255, 255, 255, 0.02);
+}
+
+.composeHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 10px;
+}
+
+.composeKind {
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+
+.composeCancel {
+	background: none;
+	border: none;
+	color: var(--muted);
+	cursor: pointer;
+	font-size: 13px;
+	padding: 2px 4px;
+	line-height: 1;
+	transition: color 0.15s;
+}
+
+.composeCancel:hover:not(:disabled) {
+	color: var(--text);
+}
+
+.composeArea {
+	width: 100%;
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	color: var(--text);
+	padding: 10px 12px;
+	font-size: 14px;
+	line-height: 1.55;
+	resize: vertical;
+	font-family: var(--font-sans);
+	outline: none;
+	transition: border-color 0.15s;
+	display: block;
+	margin-bottom: 10px;
+}
+
+.composeArea:focus {
+	border-color: #3f3f46;
+}
+
+.composeArea:disabled {
+	opacity: 0.5;
+}
+
+.composeSubmit {
+	width: 100%;
+	padding: 9px 16px;
+	font-size: 13px;
+	font-weight: 600;
+	font-family: var(--font-sans);
+	border-radius: 8px;
+	border: none;
+	background: var(--accent);
+	color: var(--bg);
+	cursor: pointer;
+	transition: opacity 0.15s;
+}
+
+.composeSubmit:hover:not(:disabled) {
+	opacity: 0.88;
+}
+
+.composeSubmit:disabled {
+	opacity: 0.4;
+	cursor: default;
+}
+
+/* ── Close ── */
 
 .close {
 	margin-top: 22px;

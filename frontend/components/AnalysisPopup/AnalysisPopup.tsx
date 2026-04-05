@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
 	STRENGTH_DISPLAY,
@@ -11,21 +11,16 @@ import { factKey, type FactKind } from "@/lib/factKey";
 import type { ArgumentNodeData } from "@/lib/types";
 import styles from "./AnalysisPopup.module.css";
 
+type UserCompose = { kind: FactKind; text: string } | null;
+
 type Props = {
 	node: ArgumentNodeData;
 	context: string;
 	onClose: () => void;
-	/** Parent runs fetch + merge; survives popup close. */
-	onExpandFact: (
-		kind: FactKind,
-		text: string,
-		index: number
-	) => Promise<void>;
-	/** Keys already merged for this node (from parent). */
+	onExpandFact: (kind: FactKind, text: string, index: number) => Promise<void>;
+	onUserFact: (kind: FactKind, text: string) => Promise<void>;
 	mergedFactKeys: ReadonlySet<string>;
-	/** Fact key whose expand request is in flight (from parent; survives popup close). */
 	pendingExpandFactKey: string | null;
-	/** True while any expand request is in flight (may be for another node). */
 	anyExpandInFlight: boolean;
 };
 
@@ -34,16 +29,23 @@ export default function AnalysisPopup({
 	context,
 	onClose,
 	onExpandFact,
+	onUserFact,
 	mergedFactKeys,
 	pendingExpandFactKey,
 	anyExpandInFlight,
 }: Props) {
 	const [err, setErr] = useState<string | null>(null);
 	const [mounted, setMounted] = useState(false);
+	const [compose, setCompose] = useState<UserCompose>(null);
+	const [userBusy, setUserBusy] = useState(false);
+	const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+	useEffect(() => { setMounted(true); }, []);
+
+	// Focus textarea when compose panel opens
 	useEffect(() => {
-		setMounted(true);
-	}, []);
+		if (compose) textareaRef.current?.focus();
+	}, [compose?.kind]);
 
 	const handleAdd = useCallback(
 		async (kind: FactKind, text: string, index: number) => {
@@ -53,26 +55,40 @@ export default function AnalysisPopup({
 			try {
 				await onExpandFact(kind, text, index);
 			} catch (e) {
-				setErr(
-					e instanceof Error ? e.message : "Could not add to graph."
-				);
+				setErr(e instanceof Error ? e.message : "Could not add to graph.");
 			}
 		},
 		[mergedFactKeys, onExpandFact]
 	);
 
+	const handleUserSubmit = useCallback(async () => {
+		if (!compose?.text.trim() || userBusy || anyExpandInFlight) return;
+		setErr(null);
+		setUserBusy(true);
+		try {
+			await onUserFact(compose.kind, compose.text.trim());
+			setCompose(null);
+		} catch (e) {
+			setErr(e instanceof Error ? e.message : "Could not add to graph.");
+		} finally {
+			setUserBusy(false);
+		}
+	}, [compose, userBusy, anyExpandInFlight, onUserFact]);
+
+	const openCompose = useCallback((kind: FactKind) => {
+		setCompose({ kind, text: "" });
+		setErr(null);
+	}, []);
+
 	const strength: StrengthLabel = normalizeStrengthLabel(node.strength);
 	const strengthMeta = STRENGTH_DISPLAY[strength];
-	const reasoning = node.strength_reasoning;
 
 	if (!mounted) return null;
 
+	const inFlight = userBusy || anyExpandInFlight;
+
 	return createPortal(
-		<div
-			className={styles.backdrop}
-			onClick={onClose}
-			role="presentation"
-		>
+		<div className={styles.backdrop} onClick={onClose} role="presentation">
 			<div
 				className={styles.panel}
 				onClick={(e) => e.stopPropagation()}
@@ -80,9 +96,7 @@ export default function AnalysisPopup({
 				aria-labelledby="popup-title"
 			>
 				<div className={styles.kicker}>{node.type}</div>
-				<h3 id="popup-title" className={styles.title}>
-					{node.label}
-				</h3>
+				<h3 id="popup-title" className={styles.title}>{node.label}</h3>
 				<p className={styles.detail}>{node.detail}</p>
 
 				{err ? <p className={styles.error}>{err}</p> : null}
@@ -96,8 +110,8 @@ export default function AnalysisPopup({
 					>
 						{strengthMeta.title}
 					</div>
-					{reasoning ? (
-						<p className={styles.reason}>{reasoning}</p>
+					{node.strength_reasoning ? (
+						<p className={styles.reason}>{node.strength_reasoning}</p>
 					) : null}
 				</div>
 
@@ -110,24 +124,14 @@ export default function AnalysisPopup({
 							const done = mergedFactKeys.has(k);
 							return (
 								<div key={k} className={styles.factRow}>
-									<p
-										className={`${styles.block} ${styles.blockCounter}`}
-									>
-										{c}
-									</p>
+									<p className={`${styles.block} ${styles.blockCounter}`}>{c}</p>
 									<button
 										type="button"
 										className={styles.factAdd}
-										disabled={done || anyExpandInFlight}
-										onClick={() =>
-											handleAdd("counterargument", c, i)
-										}
+										disabled={done || inFlight}
+										onClick={() => handleAdd("counterargument", c, i)}
 									>
-										{done
-											? "Added"
-											: busy
-												? "…"
-												: "Add"}
+										{done ? "Added" : busy ? "…" : "Add"}
 									</button>
 								</div>
 							);
@@ -137,43 +141,91 @@ export default function AnalysisPopup({
 
 				{node.further_supports.length > 0 ? (
 					<div className={styles.section}>
-						<div className={styles.label}>
-							Further support
-						</div>
+						<div className={styles.label}>Further support</div>
 						{node.further_supports.map((s, i) => {
 							const k = factKey("further_support", i);
 							const busy = pendingExpandFactKey === k;
 							const done = mergedFactKeys.has(k);
 							return (
 								<div key={k} className={styles.factRow}>
-									<p
-										className={`${styles.block} ${styles.blockStrength}`}
-									>
-										{s}
-									</p>
+									<p className={`${styles.block} ${styles.blockStrength}`}>{s}</p>
 									<button
 										type="button"
 										className={styles.factAdd}
-										disabled={done || anyExpandInFlight}
-										onClick={() =>
-											handleAdd(
-												"further_support",
-												s,
-												i
-											)
-										}
+										disabled={done || inFlight}
+										onClick={() => handleAdd("further_support", s, i)}
 									>
-										{done
-											? "Added"
-											: busy
-												? "…"
-												: "Add"}
+										{done ? "Added" : busy ? "…" : "Add"}
 									</button>
 								</div>
 							);
 						})}
 					</div>
 				) : null}
+
+				{/* User-authored compose area */}
+				{compose ? (
+					<div className={styles.composeSection}>
+						<div className={styles.composeHeader}>
+							<span className={styles.composeKind}>
+								{compose.kind === "counterargument" ? "Your rebuttal" : "Your support"}
+							</span>
+							<button
+								type="button"
+								className={styles.composeCancel}
+								onClick={() => setCompose(null)}
+								disabled={userBusy}
+							>
+								✕
+							</button>
+						</div>
+						<textarea
+							ref={textareaRef}
+							className={styles.composeArea}
+							placeholder={
+								compose.kind === "counterargument"
+									? "Describe your objection to this claim…"
+									: "Describe additional support for this claim…"
+							}
+							value={compose.text}
+							onChange={(e) =>
+								setCompose((prev) => prev && { ...prev, text: e.target.value })
+							}
+							onKeyDown={(e) => {
+								if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleUserSubmit();
+							}}
+							rows={3}
+							disabled={userBusy}
+						/>
+						<button
+							type="button"
+							className={styles.composeSubmit}
+							disabled={!compose.text.trim() || inFlight}
+							onClick={handleUserSubmit}
+						>
+							{userBusy ? "Adding…" : "Add to map"}
+						</button>
+					</div>
+				) : (
+					<div className={styles.createRow}>
+						<button
+							type="button"
+							className={`${styles.createBtn} ${styles.createCounter}`}
+							disabled={inFlight}
+							onClick={() => openCompose("counterargument")}
+						>
+							+ Rebuttal
+						</button>
+						<button
+							type="button"
+							className={`${styles.createBtn} ${styles.createSupport}`}
+							disabled={inFlight}
+							onClick={() => openCompose("further_support")}
+						>
+							+ Support
+						</button>
+					</div>
+				)}
 
 				<button type="button" className={styles.close} onClick={onClose}>
 					Close

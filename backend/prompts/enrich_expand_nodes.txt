@@ -11,9 +11,10 @@ Parent node: {parent_node_id} ({parent_type}) — {parent_label}
 Nodes that need complete analysis (JSON array):
 {nodes_json}
 
-Return ONLY valid JSON: a single object whose keys are node ids from the array above. Each value MUST be an object with:
-- "counterarguments": array of 2–3 short distinct strings (objections, alternatives, or what could undermine the claim)
-- "further_supports": array of 1–3 short strings (missing support, citations, or ways the claim could be stronger)
+Return ONLY valid JSON: a single object whose keys are node ids from the array above.
+Each value must be an object with:
+- "counterarguments":   exactly 0–3 short distinct strings
+- "further_supports":   exactly 0–3 short strings
 - "strength_reasoning": one sentence explaining the node's strength label
 
 Never return empty arrays. Infer from labels, details, and context when the text is silent.
@@ -21,8 +22,8 @@ Never return empty arrays. Infer from labels, details, and context when the text
 Example shape:
 {{
   "x1": {{
-    "counterarguments": ["...", "...", "..."],
-    "further_supports": ["...", "..."],
+    "counterarguments":   ["...", "...", "..."],
+    "further_supports":   ["...", "..."],
     "strength_reasoning": "..."
   }}
 }}

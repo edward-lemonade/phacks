@@ -81,9 +81,7 @@ type FlowInnerProps = {
 function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps) {
 	const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
 	const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-	const [selectedNode, setSelectedNode] = useState<ArgumentNodeData | null>(
-		null
-	);
+	const [selectedNode, setSelectedNode] = useState<ArgumentNodeData | null>(null);
 	const [mergedFactKeysByNodeId, setMergedFactKeysByNodeId] = useState<
 		Record<string, string[]>
 	>({});
@@ -100,6 +98,22 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 	const handleNodeClick = useCallback((nodeData: ArgumentNodeData) => {
 		setSelectedNode(nodeData);
 	}, []);
+
+	/** Shared merge logic after any expand/user-fact API call. */
+	const mergeFragment = useCallback(
+		(parentNode: ArgumentNodeData, data: GraphData) => {
+			const parent = getNode(parentNode.id);
+			const pos = parent?.position ?? { x: 0, y: 0 };
+			const { nodes: addN, edges: addE } = mergeFragmentNearParent(
+				pos,
+				data,
+				handleNodeClick
+			);
+			setNodes((nds) => [...nds, ...addN]);
+			setEdges((eds) => [...eds, ...addE]);
+		},
+		[getNode, handleNodeClick, setEdges, setNodes]
+	);
 
 	const runExpandFact = useCallback(
 		async (
@@ -129,57 +143,75 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 					}),
 				});
 				if (!res.ok) {
-					const body = (await res.json().catch(() => ({}))) as {
-						detail?: string;
-					};
+					const body = (await res.json().catch(() => ({}))) as { detail?: string };
 					throw new Error(body.detail ?? "Expand failed");
 				}
 				const data = (await res.json()) as GraphData;
-				const parent = getNode(parentNode.id);
-				const pos = parent?.position ?? { x: 0, y: 0 };
-				const { nodes: addN, edges: addE } = mergeFragmentNearParent(
-					pos,
-					data,
-					handleNodeClick
-				);
-				setNodes((nds) => [...nds, ...addN]);
-				setEdges((eds) => [...eds, ...addE]);
+				mergeFragment(parentNode, data);
 				setMergedFactKeysByNodeId((prev) => {
 					const existing = prev[parentNode.id] ?? [];
 					if (existing.includes(key)) return prev;
-					return {
-						...prev,
-						[parentNode.id]: [...existing, key],
-					};
+					return { ...prev, [parentNode.id]: [...existing, key] };
 				});
 			} finally {
 				expandInFlightRef.current = false;
 				setPendingExpand((p) =>
-					p?.nodeId === parentNode.id && p?.factKey === key
-						? null
-						: p
+					p?.nodeId === parentNode.id && p?.factKey === key ? null : p
 				);
 			}
 		},
-		[getNode, handleNodeClick, originalText, setEdges, setNodes]
+		[mergeFragment, originalText]
 	);
 
 	const handlePopupExpandFact = useCallback(
 		async (kind: FactKind, text: string, index: number) => {
-			const parentNode = selectedNode;
-			if (!parentNode) return;
-			await runExpandFact(parentNode, kind, text, index);
+			if (!selectedNode) return;
+			await runExpandFact(selectedNode, kind, text, index);
 		},
 		[selectedNode, runExpandFact]
+	);
+
+	const handleUserFact = useCallback(
+		async (kind: FactKind, text: string) => {
+			if (!selectedNode || expandInFlightRef.current) {
+				throw new Error("Wait for the current add to finish.");
+			}
+			expandInFlightRef.current = true;
+			// Use a sentinel key so anyExpandInFlight becomes true
+			const key = `user:${kind}:${Date.now()}`;
+			setPendingExpand({ nodeId: selectedNode.id, factKey: key });
+			try {
+				const res = await fetch(apiUrl("/api/user-fact"), {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						parent_node_id: selectedNode.id,
+						fact_kind: kind,
+						fact_text: text,
+						original_text: originalText,
+						parent_label: selectedNode.label,
+						parent_detail: selectedNode.detail,
+						parent_type: selectedNode.type,
+					}),
+				});
+				if (!res.ok) {
+					const body = (await res.json().catch(() => ({}))) as { detail?: string };
+					throw new Error(body.detail ?? "User fact expansion failed");
+				}
+				const data = (await res.json()) as GraphData;
+				mergeFragment(selectedNode, data);
+			} finally {
+				expandInFlightRef.current = false;
+				setPendingExpand(null);
+			}
+		},
+		[selectedNode, originalText, mergeFragment]
 	);
 
 	const graphStructureKey = useMemo(
 		() =>
 			edges
-				.map(
-					(e) =>
-						`${e.id}:${e.source}:${e.target}:${String(e.data?.relation ?? "")}`
-				)
+				.map((e) => `${e.id}:${e.source}:${e.target}:${String(e.data?.relation ?? "")}`)
 				.join("|") +
 			"|" +
 			[...nodes.map((n) => n.id)].sort().join(","),
@@ -202,11 +234,7 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 	const enrichedNodes: ArgumentFlowNode[] = nodes.map((n) => ({
 		...n,
 		type: "argument",
-		data: {
-			...n.data,
-			id: n.id,
-			onNodeClick: handleNodeClick,
-		},
+		data: { ...n.data, id: n.id, onNodeClick: handleNodeClick },
 	}));
 
 	const styledEdges = edges.map((e) => {
@@ -222,10 +250,7 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 		const strokeColor = hexToRgba(color, vis.strokeOpacity);
 		return {
 			...e,
-			style: {
-				stroke: strokeColor,
-				strokeWidth: vis.strokeWidth,
-			},
+			style: { stroke: strokeColor, strokeWidth: vis.strokeWidth },
 			markerEnd: {
 				type: MarkerType.ArrowClosed,
 				color: strokeColor,
@@ -246,10 +271,7 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 			const el = event.target as HTMLElement | null;
 			if (el?.closest(".react-flow__node")) return;
 			if (!el?.closest(".react-flow__pane")) return;
-			const pos = screenToFlowRef.current({
-				x: event.clientX,
-				y: event.clientY,
-			});
+			const pos = screenToFlowRef.current({ x: event.clientX, y: event.clientY });
 			const id = `user-${Date.now()}`;
 			const newNode: ArgumentFlowNode = {
 				id,
@@ -289,11 +311,7 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 				className={styles.flow}
 				style={{ width: "100%", height: "100%" }}
 			>
-				<FlowEffects
-					nodes={nodes}
-					edges={edges}
-					screenToFlowRef={screenToFlowRef}
-				/>
+				<FlowEffects nodes={nodes} edges={edges} screenToFlowRef={screenToFlowRef} />
 				<Background color="var(--grid)" gap={28} size={1} />
 				<Controls showInteractive={false} />
 				{selectedNode ? (
@@ -301,9 +319,7 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 						node={selectedNode}
 						context={originalText}
 						onClose={() => setSelectedNode(null)}
-						mergedFactKeys={
-							new Set(mergedFactKeysByNodeId[selectedNode.id] ?? [])
-						}
+						mergedFactKeys={new Set(mergedFactKeysByNodeId[selectedNode.id] ?? [])}
 						pendingExpandFactKey={
 							pendingExpand?.nodeId === selectedNode.id
 								? pendingExpand.factKey
@@ -311,6 +327,7 @@ function FlowInner({ initialNodes, initialEdges, originalText }: FlowInnerProps)
 						}
 						anyExpandInFlight={pendingExpand !== null}
 						onExpandFact={handlePopupExpandFact}
+						onUserFact={handleUserFact}
 					/>
 				) : null}
 			</ReactFlow>

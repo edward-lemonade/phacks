@@ -3,57 +3,19 @@ For EVERY node, also provide critical analysis used for UI (not as separate grap
 
 Return ONLY valid JSON. No explanation, no markdown, no code fences.
 
-Node types (use only these):
-- "thesis": the central/root claim
-- "subclaim": a claim that supports the thesis or another subclaim
-- "evidence": a fact, statistic, or cited data point
-- "axiom": an assumed truth or unstated premise
-- "counterclaim": an objection, rebuttal, or fallacy-style attack on another claim. 
-if the text rebukes potential objections to the thesis, list those objections as counterclaims, and then list the rebuttal as an additional counterclaim underneath this counterclaim, thus neutralizing it.
+Node type rules:
+- "thesis":       the central/root claim — exactly one per response
+- "subclaim":     a claim that supports the thesis or another subclaim
+- "evidence":     a fact, statistic, or cited data point
+- "axiom":        an assumed truth or unstated premise
+- "counterclaim": an objection, rebuttal, or fallacy-style attack on another claim.
+  If the text rebukes a potential objection, list the objection as a counterclaim, then list
+  the rebuttal as a counterclaim under that counterclaim (neutralising it).
 
-Edge relations (use only these):
-- "supports": source supports target
-- "contradicts": source contradicts target
-
-Rules:
-- Edges point FROM supporting node TO the node it supports (child → parent)
-- For "contradicts": edge MUST go FROM the counterclaim node TO the claim it attacks (child → parent)
-- There must be exactly one "thesis" node
-- Keep labels short (max 8 words)
-- Detail should be the relevant excerpt or a concise paraphrase
-- All nodes must be a stance or a contributor to a stance. Vague restatements, definitions, or explanations should not be included since they do not modify the argument.
-- The thesis should not have any outgoing edges. Everything should lead to the thesis
-
-Per-node "strength" (exactly one of these strings, not a number):
-- "true": logically true; typical for axioms
-- "strong": not necessarily logically true but well supported by its children; at most one counterclaim in the text against it
-- "weak": more than one counterclaim or objection found against it in the text
-- "fallacious": not necessarily false, but the reasoning offered for it in the text is flawed
-- "false": logically or verifiably false statement in context
-
-Per-node analysis (on each node object):
-- counterarguments: 0–3 short strings — plausible objections and fallacy-style critiques here
-- further_supports: 0–3 short strings — ways the claim could be stronger or unstated support
-- strength_reasoning: one sentence explaining the chosen strength label
+Additional rules:
+- The thesis must have no outgoing edges — everything points toward it.
+- Keep labels ≤ 8 words.
+- Only include nodes that take a stance or modify one; skip vague restatements and definitions.
 
 TEXT:
 {text}
-
-Return this exact JSON shape (example; fill every node with all fields):
-{{
-  "nodes": [
-    {{
-      "id": "n1",
-      "type": "thesis",
-      "label": "...",
-      "detail": "...",
-      "strength": "strong",
-      "counterarguments": ["...", "..."],
-      "further_supports": ["..."],
-      "strength_reasoning": "..."
-    }}
-  ],
-  "edges": [
-    {{"id": "e1", "source": "n2", "target": "n1", "relation": "supports"}}
-  ]
-}}

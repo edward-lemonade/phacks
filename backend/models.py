@@ -110,3 +110,13 @@ class ExpandFactRequest(BaseModel):
     parent_label: str
     parent_detail: str
     parent_type: str
+
+
+class UserFactRequest(BaseModel):
+    parent_node_id: str
+    fact_kind: str  # counterargument | further_support
+    fact_text: str
+    original_text: str
+    parent_label: str
+    parent_detail: str
+    parent_type: str

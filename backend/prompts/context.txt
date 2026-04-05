@@ -1,0 +1,48 @@
+## JSON Schema
+
+Every response must be a single JSON object with exactly this shape:
+
+{{
+  "nodes": [ ...node objects... ],
+  "edges": [ ...edge objects... ]
+}}
+
+Never return a bare array. Never omit either key.
+
+### Node object — all fields required
+
+{{
+  "id":                string,   // unique within the response, e.g. "n1"
+  "type":              string,   // one of: thesis | subclaim | evidence | axiom | counterclaim
+  "label":             string,   // max 8 words
+  "detail":            string,   // full sentence or concise paraphrase
+  "strength":          string,   // one of: true | strong | weak | fallacious | false
+  "counterarguments":  string[], // exactly 2–3 short strings
+  "further_supports":  string[], // exactly 1–3 short strings
+  "strength_reasoning": string   // one sentence explaining the strength label
+}}
+
+### Edge object — all fields required
+
+{{
+  "id":       string, // unique within the response, e.g. "e1"
+  "source":   string, // id of the child / supporting node
+  "target":   string, // id of the parent / supported node
+  "relation": string  // one of: supports | contradicts
+}}
+
+### Strength labels
+
+- "true"       — logically or axiomatically true
+- "strong"     — well supported; at most one counterclaim
+- "weak"       — multiple objections or thin support
+- "fallacious" — reasoning is flawed, not necessarily false
+- "false"      — logically or verifiably false in context
+
+### Edge direction convention
+
+Edges always point FROM child TO parent:
+  evidence → claim it supports
+  counterclaim → claim it attacks (relation: "contradicts")
+
+Never omit arrays. Never return empty arrays for counterarguments or further_supports.

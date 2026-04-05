@@ -1,0 +1,51 @@
+A user has written a custom {fact_kind} for a node in an argument map.
+Expand it into a small subgraph and perform full critical analysis on each new node.
+
+Parent node id: {parent_node_id}
+Parent type: {parent_type}
+Parent label: {parent_label}
+Parent detail: {parent_detail}
+
+User's text: {fact_text}
+
+Original passage for context:
+{original_text}
+
+Return ONLY valid JSON. No markdown, no code fences.
+
+All node types allowed: thesis, subclaim, evidence, axiom, counterclaim.
+
+Every new node MUST include ALL of the following (never omit; never use empty arrays):
+- id, type, label (max 8 words), detail, strength (one of true|strong|weak|fallacious|false)
+- counterarguments: exactly 2–3 short strings
+- further_supports: exactly 1–3 short strings
+- strength_reasoning: one sentence explaining the strength label
+
+---
+
+### When fact_kind is "counterargument"
+
+Produce 2–4 nodes total:
+
+1. Exactly one node with type "counterclaim" representing the user's objection.
+   It is the only node that links to the parent.
+
+2. At least one additional node typed "evidence", "subclaim", or "axiom" that supports
+   or elaborates the counterclaim.
+
+Edges:
+- counterclaim → parent: relation "contradicts"
+- each evidence/subclaim/axiom → counterclaim: relation "supports"
+
+Do NOT connect evidence/subclaim/axiom directly to the parent.
+Do NOT use "thesis" for this expansion.
+
+---
+
+### When fact_kind is "further_support"
+
+Produce 1–3 nodes only. Types: subclaim, evidence, axiom (pick what fits).
+
+Edges: each new node → parent, relation "supports".
+
+---
