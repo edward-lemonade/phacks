@@ -20,7 +20,7 @@ export default function AttackModeButton({ active, onToggle, disabled }: Props) 
 			aria-label="Toggle attack mode"
 		>
 			<SwordIcon />
-			{active ? "Stop" : "Attack"}
+			<span className={styles.label}>{active ? "Stop" : "Attack"}</span>
 		</button>
 	);
 }
