@@ -1,3 +1,5 @@
+made for Diamondhacks 2026 by myself
+
 # Argument Map
 
 Hackathon-grade argument mapping: paste text → Gemini extracts a claim graph → React Flow shows it; click nodes for counterargument analysis. Double-click the canvas to add a node; connect nodes by dragging handles.
